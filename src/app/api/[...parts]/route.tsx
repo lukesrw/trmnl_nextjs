@@ -1,9 +1,12 @@
 import { WhiteHouseResponse } from "@/utils/lib/WhiteHouseResponse";
+import { readFile } from "fs/promises";
 import { StatusCodes } from "http-status-codes";
 import { NextRequest } from "next/server";
+import { join } from "path";
 import { log } from "../lib/log";
 import { TrmnlRequest } from "../lib/TrmnlRequest";
 import { display } from "./lib/display";
+import { ImageStorage } from "./lib/ImageStorage";
 
 type PageProps = { params: Promise<{ parts: string[] }> };
 
@@ -35,13 +38,33 @@ export async function GET(request: NextRequest, props: PageProps) {
                 return await display(trmnlRequest);
 
             case "display-tmp":
-                /**
-                 * @todo add method for serving images from tmp directory
-                 */
-                break;
+                const fileName = request.nextUrl.searchParams.get("image");
+                if (!fileName) {
+                    return WhiteHouseResponse.toNextResponse({
+                        status: StatusCodes.BAD_REQUEST,
+                        developerMessage:
+                            "Request is missing `image` GET argument",
+                        userMessage: "Oops, we couldn't find that image!",
+                        errorCode: "DISPLAY-TMP-NO-IMAGE"
+                    });
+                }
+
+                try {
+                    const image = await readFile(
+                        join(ImageStorage.getDirectory(trmnlRequest), fileName)
+                    );
+
+                    return new Response(image, {
+                        headers: {
+                            "Content-Type": "image/bmp"
+                        }
+                    });
+                } catch (error) {
+                    return WhiteHouseResponse.attemptNextResponse(error);
+                }
         }
     } catch (error) {
-        WhiteHouseResponse.attemptNextResponse(error);
+        return WhiteHouseResponse.attemptNextResponse(error);
     }
 
     return WhiteHouseResponse.toNextResponse({
@@ -76,7 +99,7 @@ export async function POST(request: NextRequest, props: PageProps) {
                 return new Response(null, { status: StatusCodes.NO_CONTENT });
         }
     } catch (error) {
-        WhiteHouseResponse.attemptNextResponse(error);
+        return WhiteHouseResponse.attemptNextResponse(error);
     }
 
     return WhiteHouseResponse.toNextResponse({
