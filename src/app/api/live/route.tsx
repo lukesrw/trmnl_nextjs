@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
     try {
         return await display(new TrmnlRequest(request));
     } catch (error) {
-        console.error(error);
-
         return WhiteHouseResponse.attemptNextResponse(error);
     }
 }
