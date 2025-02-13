@@ -108,6 +108,7 @@ export class Render {
 
     private static async fromJsx(
         input: RenderInputJsx,
+        frame?: RenderOptions["frame"],
         isDebug = false
     ): Promise<Buffer<ArrayBufferLike>> {
         const options: ImageResponseOptions = {
@@ -122,8 +123,8 @@ export class Render {
              * Prepare the JSX Component, wrapped in a frame if specified.
              */
             let $Component = <input.component></input.component>;
-            if (input.frame) {
-                $Component = <input.frame>{$Component}</input.frame>;
+            if (frame) {
+                $Component = <frame.component>{$Component}</frame.component>;
             }
 
             if (isDebug) {
@@ -137,11 +138,11 @@ export class Render {
                         "Is White": input.isWhite
                     }
                 };
-                if (input.frame) {
+                if (frame) {
                     debug["Input Frame"] = {
                         Type: "JSX",
-                        Name: input.frame?.name,
-                        "Display Name": input.frame?.displayName
+                        Name: frame.component.displayName,
+                        "Display Name": frame.component.displayName
                     };
                 }
 
@@ -281,6 +282,7 @@ export class Render {
                         },
                         isWhite: this.config.input.isWhite
                     },
+                    undefined,
                     this.debug?.input
                 );
                 break;
@@ -288,6 +290,7 @@ export class Render {
             case "jsx":
                 this._input = await Render.fromJsx(
                     this.config.input,
+                    undefined,
                     this.debug?.input
                 );
                 break;
@@ -401,7 +404,6 @@ export class Render {
                     component() {
                         return htmlReactParser(html);
                     },
-                    frame: this.config.input.frame,
                     height: this.config.input.height,
                     isWhite: this.config.input.isWhite,
                     width: this.config.input.width
@@ -433,7 +435,7 @@ export class Render {
             console.table({
                 Frame: {
                     Type: this.config.input.type,
-                    "Being Framed": Boolean(this.config.input.frame)
+                    "Being Framed": Boolean(this.config.frame)
                 }
             });
         }
@@ -441,27 +443,46 @@ export class Render {
         /**
          * If no frame has been specified, return the input.
          */
-        if (!this.config.input.frame) {
+        if (!this.config.frame) {
             return input;
         }
 
-        return Render.fromJsx({
-            type: "jsx",
-            component() {
-                return (
-                    <img
-                        src={`data:image/png;base64,${input.toString(
-                            "base64"
-                        )}`}
-                        style={{
-                            width: "100%",
-                            height: "100%"
-                        }}
-                    />
-                );
+        const content = await sharp(input)
+            .resize({
+                width: this.config.frame.width ?? screen.width,
+                height: this.config.frame.height ?? screen.height,
+                fit: this.config.frame.fit ?? "cover",
+                position: this.config.frame.position ?? "center",
+                background: this.config.input.isWhite ? "#FFF" : "#000"
+            })
+            .png()
+            .toBuffer();
+
+        this._framed = await Render.fromJsx(
+            {
+                type: "jsx",
+                component() {
+                    return (
+                        <img
+                            src={`data:image/png;base64,${content.toString(
+                                "base64"
+                            )}`}
+                            tw="w-full h-full"
+                        />
+                    );
+                },
+                // frame: this.config.input.frame,
+                isWhite: this.config.input.isWhite
             },
-            frame: this.config.input.frame
-        });
+            this.config.frame,
+            this.debug?.frame
+        );
+
+        return this._framed;
+    }
+
+    async toFramed(): Promise<Buffer<ArrayBufferLike>> {
+        return await this.getFramed();
     }
 
     /**

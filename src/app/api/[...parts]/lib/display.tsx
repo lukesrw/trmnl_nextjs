@@ -1,49 +1,12 @@
-import { ditherMethod } from "@/lib/dithering";
-import { Render } from "@/lib/Render";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { after } from "next/server";
-import { join } from "path";
 import { TrmnlRequest } from "../../lib/TrmnlRequest";
+import { getDisplay } from "./getDisplay";
 import { ImageStorage } from "./ImageStorage";
 import { Trmnl } from "./Trmnl";
 
-function getRandom12MonkeysImage() {
-    const season = Math.floor(Math.random() * 4) + 1;
-    const episode = Math.floor(Math.random() * 10) + 1;
-    const recap = Math.floor(Math.random() * 14) + 1;
-
-    return join(
-        "E:",
-        "12 Monkeys",
-        "project-spearhead",
-        "assets",
-        "cdn",
-        `Season ${season}`,
-        `Episode ${episode}`,
-        "Recaps",
-        `${recap}.webp`
-    );
-}
-
-let neilBag: number[] = [];
-
-function getRandomNeilImage() {
-    const item = Math.floor(Math.random() * 10) + 1;
-
-    return join(process.cwd(), "public", "img", "work", `${item}.jpg`);
-}
-
 export async function display(trmnlRequest: TrmnlRequest) {
-    const image = await new Render({
-        input: {
-            type: "image",
-            path: getRandomNeilImage()
-        },
-        dither: {
-            method: ditherMethod.basic,
-            position: "top"
-        }
-    }).toBmp();
+    const image = await getDisplay(trmnlRequest).toBmp();
 
     const location = new ImageStorage(
         trmnlRequest,

@@ -1,4 +1,4 @@
-import { CSSProperties, FunctionComponent, PropsWithChildren } from "react";
+import { CSSProperties, FunctionComponent } from "react";
 
 type RenderInputOptions = {
     /**
@@ -20,8 +20,6 @@ type RenderInputOptions = {
      * Defaults to the TRMNL screen height.
      */
     height?: number;
-
-    frame?: FunctionComponent<PropsWithChildren>;
 };
 
 export type RenderInputBuffer = Omit<RenderInputOptions, "width" | "height"> & {

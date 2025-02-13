@@ -94,8 +94,6 @@ export class TrmnlRequest {
                 ((this.batteryVoltage - minimum) / (maximum - minimum)) * 100
             );
 
-            console.log(`Battery voltage is ${this.batteryVoltage}V`);
-
             if (this.batteryPercentage > 100) {
                 console.warn(
                     `Warning: Battery voltage is ${this.batteryVoltage}V`

@@ -1,4 +1,5 @@
 import { Dimensions } from "@/utils/types/Screen";
+import { FunctionComponent, PropsWithChildren } from "react";
 import sharp from "sharp";
 import { RenderInput } from "./RenderInput";
 
@@ -32,8 +33,13 @@ type RenderBmpOptions = {
     dpi?: number;
 };
 
+type RenderFrameOptions = {
+    component: FunctionComponent<PropsWithChildren>;
+} & Pick<sharp.ResizeOptions, "fit" | "position" | "width" | "height">;
+
 export type RenderOptions<TRenderInput = RenderInput> = {
     input: TRenderInput;
+    frame?: RenderFrameOptions;
     dither?: RenderDitherOptions;
     threshold?: RenderThresholdOptions;
     bmp?: RenderBmpOptions;
