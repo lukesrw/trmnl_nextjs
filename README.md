@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Render Pipeline
 
-## Getting Started
+The Project image rendering pipeline currently has the following stages:
 
-First, run the development server:
+1. Input: Retrieve the image from the provided source.
+2. Frame (Optional): Wrap the Input stage within a component.
+3. Dither: Flatten, resize, and (optionally) dither the Frame stage.
+4. Threshold: Resize and convert the Dither stage to black and white.
+5. BMP: Resize and convert the Threshold stage to a BMP image.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stage 1. Input
+
+The Project takes an input object which sets the source of the image.
+
+The Project supports the following render input types:
+
+### Buffer
+
+```ts
+const imageFromFile = await readFile("./path/to/image.png");
+const input = {
+    type: "buffer",
+    data: imageFromFile
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Error
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Dependencies:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm i @vercel/og
+```
 
-## Learn More
+Example:
 
-To learn more about Next.js, take a look at the following resources:
+```ts
+const input = {
+    type: "error",
+    cause: new Error("Something went wrong!")
+};
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### HTML
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Dependencies:
 
-## Deploy on Vercel
+```bash
+npm i html-react-parser @vercel/og
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+const input = {
+    type: "html",
+    content: `<div tw="flex w-full h-full bg-neutral-500">Hello, world!</div>`
+};
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Image
+
+```ts
+const input = {
+    type: "image",
+    path: "./path/to/image.png"
+};
+```
+
+### JSX
+
+Dependencies:
+
+```bash
+npm i @vercel/og
+```
+
+```tsx
+const input = {
+    type: "jsx",
+    component() {
+        return <div tw="flex w-full h-full bg-neutral-500">Hello, world!</div>;
+    }
+};
+```
+
+### Text
+
+Dependencies:
+
+```bash
+npm i @vercel/og
+```
+
+```ts
+const input = {
+    type: "text",
+    value: "Hello world!",
+    style: {
+        fontSize: 64
+    }
+};
+```
+
+### Website
+
+Dependencies:
+
+```bash
+npm i playwright
+```
+
+```ts
+const input = {
+    type: "url",
+    url: "https://example.com",
+    wait: 3000
+};
+```
