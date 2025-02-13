@@ -32,7 +32,9 @@ export class Trmnl {
         return NextResponse.json({
             status: 0,
             image_url: image.url,
-            filename: isBase64 ? "" : basename(image.url),
+            filename: isBase64
+                ? ""
+                : basename(image.url).replace("?image=", ""),
             refresh_rate: image.refreshRate,
             reset_firmware: this.device?.reset_firmware ?? false,
             update_firmware: this.device?.update_firmware ?? false,
