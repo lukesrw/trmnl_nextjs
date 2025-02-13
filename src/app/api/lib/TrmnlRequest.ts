@@ -58,10 +58,12 @@ export class TrmnlRequest {
 
         /**
          * Determine whether the request is from a TRMNL device.
+         *
+         * Note that other things cannot be relied upon:
+         * - accessToken is only sent for official TRMNL endpoints
+         * - most device details aren't sent as headers to `/api/log/`
          */
-        this.isTrmnl = Boolean(
-            this.accessToken && this.userAgent === "ESP32HTTPClient"
-        );
+        this.isTrmnl = this.userAgent === "ESP32HTTPClient";
 
         if (this.isTrmnl) {
             /**
