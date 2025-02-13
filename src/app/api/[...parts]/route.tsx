@@ -56,7 +56,8 @@ export async function GET(request: NextRequest, props: PageProps) {
 
                     return new Response(image, {
                         headers: {
-                            "Content-Type": "image/bmp"
+                            "Content-Type": "image/bmp",
+                            "Content-Length": String(image.byteLength)
                         }
                     });
                 } catch (error) {
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest, props: PageProps) {
      * Return forbidden if the request is not from a TRMNL device.
      */
     if (!trmnlRequest.isTrmnl) {
+        console.log("FORBIDDEN 2");
         return WhiteHouseResponse.toNextResponse({
             status: StatusCodes.FORBIDDEN,
             developerMessage: "Endpoint is only for TRMNL devices",
