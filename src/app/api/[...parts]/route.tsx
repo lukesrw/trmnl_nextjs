@@ -94,7 +94,7 @@ export async function POST(request: NextRequest, props: PageProps) {
         const { parts } = await props.params;
         switch (parts.join("/")) {
             case "log":
-                await log(request);
+                await log(trmnlRequest);
 
                 return new Response(null, { status: StatusCodes.NO_CONTENT });
         }
