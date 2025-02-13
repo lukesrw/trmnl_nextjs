@@ -57,7 +57,7 @@ export async function display(trmnlRequest: TrmnlRequest) {
     await writeFile(location.path, image);
 
     /**
-     * If we're not serverless, you can serve and clean up the images yourself.
+     * If you're not serverless, you can both serve and clean up after yourself.
      */
     if (!trmnlRequest.isServerless) {
         after(() => {
