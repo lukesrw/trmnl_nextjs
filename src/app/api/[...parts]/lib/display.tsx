@@ -1,6 +1,6 @@
 import { ditherMethod } from "@/lib/dithering";
 import { Render } from "@/lib/Render";
-import { unlink, writeFile } from "fs/promises";
+import { mkdir, unlink, writeFile } from "fs/promises";
 import { after } from "next/server";
 import { join } from "path";
 import { TrmnlRequest } from "../../lib/TrmnlRequest";
@@ -53,6 +53,7 @@ export async function display(trmnlRequest: TrmnlRequest) {
     /**
      * Write the BMP to disk, add to list of `filePaths` to clean up.
      */
+    await mkdir(location.directory, { recursive: true });
     await writeFile(location.path, image);
 
     /**
