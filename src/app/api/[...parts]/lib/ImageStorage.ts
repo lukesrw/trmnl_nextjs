@@ -19,7 +19,7 @@ export class ImageStorage {
         if (trmlRequest.isServerless) {
             this.url = `${trmlRequest.nextRequest.nextUrl.protocol}//${trmlRequest.host}/api/display-tmp/?image=${fileName}`;
         } else {
-            this.url = `${trmlRequest.nextRequest.nextUrl.protocol}://${trmlRequest.host}/img/${fileName}`;
+            this.url = `${trmlRequest.nextRequest.nextUrl.protocol}//${trmlRequest.host}/img/${fileName}`;
         }
         this.directory = ImageStorage.getDirectory(trmlRequest);
         this.path = join(this.directory, fileName);
