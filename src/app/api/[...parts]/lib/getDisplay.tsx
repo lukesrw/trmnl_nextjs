@@ -37,7 +37,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: getRandomNeilImage()
+                path: join(process.cwd(), "public", "img", "work", "unnamed.jpg")
             },
             frame: {
                 component(props: PropsWithChildren) {
@@ -72,10 +72,6 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
                 },
                 fit: "cover",
                 position: "center"
-            },
-            dither: {
-                method: ditherMethod.basic,
-                position: "top"
             }
         },
         {
