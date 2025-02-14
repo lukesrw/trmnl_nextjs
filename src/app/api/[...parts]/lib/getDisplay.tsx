@@ -37,7 +37,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join(process.cwd(), "public", "img", "work", "test.png")
+                path: getRandomNeilImage()
             },
             frame: {
                 component(props: PropsWithChildren) {
