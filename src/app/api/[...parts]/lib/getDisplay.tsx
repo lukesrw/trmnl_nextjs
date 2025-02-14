@@ -74,7 +74,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
                 position: "center"
             },
             dither: {
-                method: ditherMethod.lowPalette,
+                method: ditherMethod.basic,
                 position: "top"
             }
         },
