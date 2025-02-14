@@ -72,6 +72,10 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
                 },
                 fit: "cover",
                 position: "center"
+            },
+            dither: {
+                method: ditherMethod.lowPalette,
+                position: "top"
             }
         },
         {
