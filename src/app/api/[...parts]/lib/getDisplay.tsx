@@ -37,7 +37,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join(process.cwd(), "public", "img", "work", "unnamed.jpg")
+                path: join(process.cwd(), "public", "img", "work", "test.png")
             },
             frame: {
                 component(props: PropsWithChildren) {
