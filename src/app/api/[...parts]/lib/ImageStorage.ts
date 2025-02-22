@@ -7,21 +7,27 @@ export class ImageStorage {
     directory: string;
     path: string;
 
-    static getDirectory(trmnlRequest: TrmnlRequest) {
-        if (trmnlRequest.isServerless) {
+    static getDirectory(isServerless: boolean) {
+        if (isServerless) {
             return join(tmpdir(), "trmnl");
         }
 
         return join(process.cwd(), "public", "img");
     }
 
-    constructor(trmlRequest: TrmnlRequest, public fileName: string) {
-        if (trmlRequest.isServerless) {
-            this.url = `${trmlRequest.nextRequest.nextUrl.protocol}//${trmlRequest.host}/api/display-tmp/?image=${fileName}`;
+    constructor(
+        { isServerless, nextRequest: { nextUrl, headers } }: TrmnlRequest,
+        public fileName: string
+    ) {
+        this.url = `${nextUrl.protocol}//${headers.get("host")}/`;
+        if (isServerless) {
+            this.url += "api/display-tmp/?image=";
         } else {
-            this.url = `${trmlRequest.nextRequest.nextUrl.protocol}//${trmlRequest.host}/img/${fileName}`;
+            this.url += "img/";
         }
-        this.directory = ImageStorage.getDirectory(trmlRequest);
+        this.url += fileName;
+
+        this.directory = ImageStorage.getDirectory(isServerless);
         this.path = join(this.directory, fileName);
     }
 }
