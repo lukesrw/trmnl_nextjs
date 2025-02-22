@@ -62,7 +62,7 @@ export class TrmnlRequest {
         // prettier-ignore
         this.isBase64 = request.nextUrl.searchParams.get("base64") === "1";
         this.width = Number(request.headers.get("width") ?? screen.width);
-        this.height = Number(request.headers.get("width") ?? screen.height);
+        this.height = Number(request.headers.get("height") ?? screen.height);
 
         /**
          * Determine whether the request is from a TRMNL device.
