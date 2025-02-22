@@ -1,6 +1,10 @@
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import type { Metadata } from "next";
 import { Michroma } from "next/font/google";
 import "./globals.css";
+
+config.autoAddCss = false;
 
 const michroma = Michroma({
     variable: "--font-microma",
@@ -20,7 +24,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${michroma.variable} antialiased`}>
+            <body
+                className={`${michroma.variable} antialiased`}
+                suppressHydrationWarning
+            >
                 {children}
             </body>
         </html>
