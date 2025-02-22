@@ -1,7 +1,7 @@
 import { WhiteHouseResponse } from "@/utils/lib/WhiteHouseResponse";
 import { readFile } from "fs/promises";
 import { StatusCodes } from "http-status-codes";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { join } from "path";
 import { log } from "../lib/log";
 import { TrmnlRequest } from "../lib/TrmnlRequest";
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, props: PageProps) {
     /**
      * Return forbidden if the request is not from a TRMNL device.
      */
-    if (!trmnlRequest.isTrmnl) {
+    if (!trmnlRequest.isTrmnl && !request.nextUrl.searchParams.has("force")) {
         return WhiteHouseResponse.toNextResponse({
             status: StatusCodes.FORBIDDEN,
             developerMessage: "Endpoint is only for TRMNL devices",
@@ -34,7 +34,18 @@ export async function GET(request: NextRequest, props: PageProps) {
     try {
         const { parts } = await props.params;
         switch (parts.join("/")) {
+            case "setup":
+                return NextResponse.json({
+                    status: StatusCodes.OK,
+                    api_key: trmnlRequest.accessToken,
+                    friendly_id: trmnlRequest.id,
+                    image_url: "",
+                    message: ""
+                });
+
             case "display":
+                await log(trmnlRequest);
+
                 return await display(trmnlRequest);
 
             case "display-tmp":
@@ -51,7 +62,12 @@ export async function GET(request: NextRequest, props: PageProps) {
 
                 try {
                     const image = await readFile(
-                        join(ImageStorage.getDirectory(trmnlRequest), fileName)
+                        join(
+                            ImageStorage.getDirectory(
+                                trmnlRequest.isServerless
+                            ),
+                            fileName
+                        )
                     );
 
                     return new Response(image, {
@@ -63,6 +79,9 @@ export async function GET(request: NextRequest, props: PageProps) {
                 } catch (error) {
                     return WhiteHouseResponse.attemptNextResponse(error);
                 }
+
+            default:
+                await log(trmnlRequest);
         }
     } catch (error) {
         return WhiteHouseResponse.attemptNextResponse(error);
@@ -82,8 +101,7 @@ export async function POST(request: NextRequest, props: PageProps) {
     /**
      * Return forbidden if the request is not from a TRMNL device.
      */
-    if (!trmnlRequest.isTrmnl) {
-        console.log("FORBIDDEN 2");
+    if (!trmnlRequest.isTrmnl && !request.nextUrl.searchParams.has("force")) {
         return WhiteHouseResponse.toNextResponse({
             status: StatusCodes.FORBIDDEN,
             developerMessage: "Endpoint is only for TRMNL devices",
@@ -99,6 +117,9 @@ export async function POST(request: NextRequest, props: PageProps) {
                 await log(trmnlRequest);
 
                 return new Response(null, { status: StatusCodes.NO_CONTENT });
+
+            default:
+                await log(trmnlRequest);
         }
     } catch (error) {
         return WhiteHouseResponse.attemptNextResponse(error);
