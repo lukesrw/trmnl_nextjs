@@ -1,3 +1,4 @@
+import { screen } from "@/lib/data/TRMNL";
 import { isServerlessRequest } from "@/utils/isServerlessRequest";
 import { NextRequest } from "next/server";
 
@@ -7,7 +8,6 @@ export class TrmnlRequest {
     /**
      * Derived from NextRequest.
      */
-    host!: string;
     isServerless!: boolean;
 
     /**
@@ -20,6 +20,10 @@ export class TrmnlRequest {
     id!: string | null;
     rssi!: number | null;
     userAgent!: string | null;
+    isSpecialFunction!: boolean;
+    isBase64!: boolean;
+    width!: number;
+    height!: number;
 
     /**
      * Derived from TRMNL requests.
@@ -33,28 +37,32 @@ export class TrmnlRequest {
         }
 
         /**
-         * Store the `NextRequest`, derive `isServerless`.
+         * Store the `NextRequest` for use elsewhere.
          */
         this.nextRequest = request;
-        const host = this.nextRequest.headers.get("host");
-        if (!host) {
-            throw new Error("Missing `host` header");
-        }
-        this.host = host;
+
+        /**
+         * Derive whether the request `isServerless`.
+         */
         this.isServerless = isServerlessRequest(request);
 
         /**
          * Derive TRMNL properties.
          */
-        this.accessToken = this.nextRequest.headers.get("access-token");
-        this.batteryVoltage = Number(
-            this.nextRequest.headers.get("battery-voltage")
+        this.accessToken = request.headers.get("access-token");
+        this.batteryVoltage = Number(request.headers.get("battery-voltage"));
+        this.firmwareVersion = request.headers.get("fw-version");
+        this.refreshRate = Number(request.headers.get("refresh-rate"));
+        this.id = request.headers.get("id");
+        this.rssi = Number(request.headers.get("rssi"));
+        this.userAgent = request.headers.get("user-agent");
+        this.isSpecialFunction = Boolean(
+            request.headers.get("special-function")
         );
-        this.firmwareVersion = this.nextRequest.headers.get("fw-version");
-        this.refreshRate = Number(this.nextRequest.headers.get("refresh-rate"));
-        this.id = this.nextRequest.headers.get("id");
-        this.rssi = Number(this.nextRequest.headers.get("rssi"));
-        this.userAgent = this.nextRequest.headers.get("user-agent");
+        // prettier-ignore
+        this.isBase64 = request.nextUrl.searchParams.get("base64") === "1";
+        this.width = Number(request.headers.get("width") ?? screen.width);
+        this.height = Number(request.headers.get("width") ?? screen.height);
 
         /**
          * Determine whether the request is from a TRMNL device.
