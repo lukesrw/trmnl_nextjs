@@ -1,13 +1,15 @@
 "use client";
 
 import adapter from "next-query-params/app";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, Suspense } from "react";
 import { QueryParamProvider } from "use-query-params";
 
 export default function Layout(props: Readonly<PropsWithChildren>) {
     return (
-        <QueryParamProvider adapter={adapter}>
-            {props.children}
-        </QueryParamProvider>
+        <Suspense>
+            <QueryParamProvider adapter={adapter}>
+                <Suspense>{props.children}</Suspense>
+            </QueryParamProvider>
+        </Suspense>
     );
 }
