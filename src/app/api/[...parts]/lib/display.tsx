@@ -6,35 +6,47 @@ import { ImageStorage } from "./ImageStorage";
 import { Trmnl } from "./Trmnl";
 
 export async function display(trmnlRequest: TrmnlRequest) {
-    const image = await getDisplay(trmnlRequest).toBmp();
-
-    const location = new ImageStorage(
-        trmnlRequest,
-        `time-${new Date().getTime()}.bmp`
-    );
+    const image = getDisplay(trmnlRequest, true);
 
     /**
-     * Write the BMP to disk, add to list of `filePaths` to clean up.
+     * @todo enable support when (if?) firmware working.
      */
-    await mkdir(location.directory, { recursive: true });
-    await writeFile(location.path, image);
+    const useBase64 = trmnlRequest.isBase64 && false;
 
-    /**
-     * If you're not serverless, you can both serve and clean up after yourself.
-     */
-    if (!trmnlRequest.isServerless) {
-        after(() => {
-            setTimeout(async () => {
-                await unlink(location.path);
-            }, 3e3);
-        });
+    let filename = "";
+    let url: string;
+    if (useBase64) {
+        url = await image.toString("base64");
+    } else {
+        const bmp = await image.toBmp();
+        const location = new ImageStorage(
+            trmnlRequest,
+            `time-${new Date().getTime()}.bmp`
+        );
+        filename = location.fileName;
+        url = location.url;
+
+        /**
+         * Write the BMP to disk, add to list of `filePaths` to clean up.
+         */
+        await mkdir(location.directory, { recursive: true });
+        await writeFile(location.path, bmp);
+
+        /**
+         * If you're not serverless, you can both serve and clean up after yourself.
+         */
+        if (!trmnlRequest.isServerless) {
+            after(() => {
+                setTimeout(async () => {
+                    await unlink(location.path);
+                }, 5e3);
+            });
+        }
     }
 
     return new Trmnl(trmnlRequest).display({
-        // url: `data:image/bmp;base64,${Buffer.from(image.bmp).toString(
-        //     "base64"
-        // )}`,
-        url: location.url,
+        url,
+        filename,
         refreshRate: 300
     });
 }

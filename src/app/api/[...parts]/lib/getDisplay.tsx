@@ -30,14 +30,19 @@ function getRandomNeilImage() {
     return join(process.cwd(), "public", "img", "work", `${item}.jpg`);
 }
 
-export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
-    console.log(trmnlRequest.nextRequest.nextUrl);
+function getRandomSteveImage() {
+    const item = Math.floor(Math.random() * 7) + 1;
 
+    return join(process.cwd(), "public", "img", "steve", `${item}.jpg`);
+}
+
+export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
     return new Render(
+        trmnlRequest,
         {
             input: {
                 type: "image",
-                path: getRandomNeilImage()
+                path: getRandomSteveImage()
             },
             frame: {
                 component(props: PropsWithChildren) {

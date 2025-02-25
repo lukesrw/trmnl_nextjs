@@ -10,7 +10,8 @@ export default {
         extend: {
             colors: {
                 background: "var(--background)",
-                foreground: "var(--foreground)"
+                foreground: "var(--foreground)",
+                trmnl: "#f27742"
             },
             fontFamily: {
                 microma: "var(--font-microma)"

@@ -1,3 +1,4 @@
+import { TrmnlRequest } from "@/app/api/lib/TrmnlRequest";
 import {
     RenderInputBuffer,
     RenderInputError,
@@ -28,6 +29,7 @@ export class Render {
     static isWhiteCache = new Map<string, boolean>();
 
     constructor(
+        private trmnlRequest: TrmnlRequest,
         private config: RenderOptions,
         private debug?: {
             input?: boolean;
@@ -67,7 +69,7 @@ export class Render {
         }
     }
 
-    private static async fromError(
+    private async fromError(
         input: RenderInputError,
         isDebug = false
     ): Promise<Buffer<ArrayBufferLike>> {
@@ -80,7 +82,8 @@ export class Render {
             console.table({
                 Input: {
                     Type: "Error",
-                    Error: message
+                    Error: message,
+                    Time: new Date().toISOString()
                 }
             });
         }
@@ -106,14 +109,14 @@ export class Render {
         });
     }
 
-    private static async fromJsx(
+    private async fromJsx(
         input: RenderInputJsx,
         frame?: RenderOptions["frame"],
         isDebug = false
     ): Promise<Buffer<ArrayBufferLike>> {
         const options: ImageResponseOptions = {
-            width: input.width ?? screen.width,
-            height: input.height ?? screen.height
+            width: input.width ?? this.trmnlRequest.width,
+            height: input.height ?? this.trmnlRequest.height
         };
 
         const { ImageResponse } = await import("@vercel/og");
@@ -135,14 +138,16 @@ export class Render {
                         "Display Name": input.component.displayName,
                         Width: input.width,
                         Height: input.height,
-                        "Is White": input.isWhite
+                        "Is White": input.isWhite,
+                        Time: new Date().toISOString()
                     }
                 };
                 if (frame) {
                     debug["Input Frame"] = {
                         Type: "JSX",
                         Name: frame.component.displayName,
-                        "Display Name": frame.component.displayName
+                        "Display Name": frame.component.displayName,
+                        Time: new Date().toISOString()
                     };
                 }
 
@@ -179,7 +184,7 @@ export class Render {
                 isDebug
             );
         } catch (error) {
-            return Render.fromError(
+            return this.fromError(
                 {
                     type: "error",
                     cause: error,
@@ -211,7 +216,8 @@ export class Render {
                     Sample: this.getBufferSample(input.data),
                     Length: input.data.length,
                     "Byte Length": input.data.byteLength,
-                    "Is White": input.isWhite
+                    "Is White": input.isWhite,
+                    Time: new Date().toISOString()
                 }
             });
         }
@@ -257,12 +263,13 @@ export class Render {
                             Type: "Text",
                             Value: value,
                             Style: JSON.stringify(style),
-                            "Is White": this.config.input.isWhite
+                            "Is White": this.config.input.isWhite,
+                            Time: new Date().toISOString()
                         }
                     });
                 }
 
-                this._input = await Render.fromJsx(
+                this._input = await this.fromJsx(
                     {
                         type: "jsx",
                         component: () => {
@@ -288,7 +295,7 @@ export class Render {
                 break;
 
             case "jsx":
-                this._input = await Render.fromJsx(
+                this._input = await this.fromJsx(
                     this.config.input,
                     undefined,
                     this.debug?.input
@@ -301,7 +308,8 @@ export class Render {
                         Input: {
                             Type: "Image",
                             Path: this.config.input.path,
-                            "Is White": this.config.input.isWhite
+                            "Is White": this.config.input.isWhite,
+                            Time: new Date().toISOString()
                         }
                     });
                 }
@@ -320,7 +328,7 @@ export class Render {
                         this.debug?.input
                     );
                 } catch (error) {
-                    this._input = await Render.fromError(
+                    this._input = await this.fromError(
                         {
                             type: "error",
                             cause: error,
@@ -340,7 +348,8 @@ export class Render {
                             Wait: this.config.input.wait,
                             Width: this.config.input.width,
                             Height: this.config.input.height,
-                            "Is White": this.config.input.isWhite
+                            "Is White": this.config.input.isWhite,
+                            Time: new Date().toISOString()
                         }
                     });
                 }
@@ -350,8 +359,10 @@ export class Render {
                 const browser = await chromium.launch({ headless: true });
                 const context = await browser.newContext({
                     viewport: {
-                        width: this.config.input.width ?? screen.width,
-                        height: this.config.input.height ?? screen.height
+                        width:
+                            this.config.input.width ?? this.trmnlRequest.width,
+                        height:
+                            this.config.input.height ?? this.trmnlRequest.height
                     },
                     acceptDownloads: false,
                     colorScheme: this.config.input.isWhite ? "light" : "dark"
@@ -374,7 +385,7 @@ export class Render {
                 break;
 
             case "error":
-                this._input = await Render.fromError(
+                this._input = await this.fromError(
                     this.config.input,
                     this.debug?.input
                 );
@@ -388,7 +399,8 @@ export class Render {
                             Content: this.config.input.content.substring(
                                 0,
                                 this.config.input.content.indexOf("\n")
-                            )
+                            ),
+                            Time: new Date().toISOString()
                         }
                     });
                 }
@@ -399,7 +411,7 @@ export class Render {
 
                 const html = this.config.input.content;
 
-                this._input = await Render.fromJsx({
+                this._input = await this.fromJsx({
                     type: "jsx",
                     component() {
                         return htmlReactParser(html);
@@ -449,8 +461,8 @@ export class Render {
 
         const content = await sharp(input)
             .resize({
-                width: this.config.frame.width ?? screen.width,
-                height: this.config.frame.height ?? screen.height,
+                width: this.config.frame.width ?? this.trmnlRequest.width,
+                height: this.config.frame.height ?? this.trmnlRequest.height,
                 fit: this.config.frame.fit ?? "cover",
                 position: this.config.frame.position ?? "center",
                 background: this.config.input.isWhite ? "#FFF" : "#000"
@@ -458,7 +470,7 @@ export class Render {
             .png()
             .toBuffer();
 
-        this._framed = await Render.fromJsx(
+        this._framed = await this.fromJsx(
             {
                 type: "jsx",
                 component() {
@@ -496,8 +508,8 @@ export class Render {
             return this._dithered;
         }
 
-        const width = this.config.dither?.width ?? screen.width;
-        const height = this.config.dither?.height ?? screen.height;
+        const width = this.config.dither?.width ?? this.trmnlRequest.width;
+        const height = this.config.dither?.height ?? this.trmnlRequest.height;
         const background = this.config.input.isWhite ? "#FFF" : "#000";
         const input = await this.getFramed();
 
@@ -587,8 +599,9 @@ export class Render {
 
         this._threshold = await dithered
             .resize({
-                width: this.config.threshold?.width ?? screen.width,
-                height: this.config.threshold?.height ?? screen.height,
+                width: this.config.threshold?.width ?? this.trmnlRequest.width,
+                height:
+                    this.config.threshold?.height ?? this.trmnlRequest.height,
                 fit: this.config.threshold?.fit ?? "cover",
                 position: this.config.threshold?.position ?? "center"
             })
@@ -625,44 +638,47 @@ export class Render {
         const thresholded = await this.getThreshold();
 
         /**
-         * Sharp is being here exclusively to flip the image vertically.
-         * I've tried to do it in the conversion below but it didn't work.
+         * Using Sharp to flip the image vertically as BMP is upside down.
+         * I've tried to do it in the conversion below, but gave up...
          *
          * @todo move the flip into the bit to byte conversion below
          */
         const sharpImageBits = await thresholded
             .resize({
-                width: screen.width,
-                height: screen.height
+                width: this.trmnlRequest.width,
+                height: this.trmnlRequest.height
             })
             .flip(true)
             .raw()
             .toBuffer();
 
-        const rowSize = Math.ceil(screen.width / 8);
+        const rowSize = Math.ceil(this.trmnlRequest.width / 8);
         const rowBuffer = (4 - (rowSize % 4)) % 4;
-        const pixelBufferSize = (rowSize + rowBuffer) * screen.height;
+        // prettier-ignore
+        const pixelBufferSize = (rowSize + rowBuffer) * this.trmnlRequest.height;
         const isForeground = this.config.input.isWhite ? 0 : 255;
         const pixelBuffer = Buffer.alloc(
             pixelBufferSize,
             this.config.input.isWhite ? 255 : 0
         );
         let modifiedPixels = 0;
-        for (let y = 0; y < screen.height; y++) {
-            const yIndex = y * screen.width;
-            for (let x = 0; x < screen.width; x++) {
+        for (let y = 0; y < this.trmnlRequest.height; y++) {
+            const yIndex = y * this.trmnlRequest.width;
+            for (let x = 0; x < this.trmnlRequest.width; x++) {
                 const bitIndex = yIndex + x;
                 const byteIndex = Math.floor(bitIndex / 8);
 
-                if (sharpImageBits[bitIndex] === isForeground) {
-                    const value = 1 << (7 - (bitIndex % 8));
+                if (sharpImageBits[bitIndex] !== isForeground) {
+                    continue;
+                }
 
-                    modifiedPixels++;
-                    if (this.config.input.isWhite) {
-                        pixelBuffer[byteIndex] &= ~value;
-                    } else {
-                        pixelBuffer[byteIndex] |= value;
-                    }
+                const value = 1 << (7 - (bitIndex % 8));
+
+                modifiedPixels++;
+                if (this.config.input.isWhite) {
+                    pixelBuffer[byteIndex] &= ~value;
+                } else {
+                    pixelBuffer[byteIndex] |= value;
                 }
             }
         }
@@ -673,7 +689,7 @@ export class Render {
          *
          * @todo store the warning, use to improve future renders
          */
-        const resolution = screen.width * screen.height;
+        const resolution = this.trmnlRequest.width * this.trmnlRequest.height;
         if (modifiedPixels > resolution / 2) {
             if (this.hash) {
                 Render.isWhiteCache.set(this.hash, !this.config.input.isWhite);
@@ -698,8 +714,8 @@ export class Render {
             console.table({
                 BMP: {
                     DPI: this.config.bmp?.dpi,
-                    Width: screen.width,
-                    Height: screen.height,
+                    Width: this.trmnlRequest.width,
+                    Height: this.trmnlRequest.height,
                     "File Size": fileSize,
                     "Modified Pixels": modifiedPixels,
                     "Modified %": Math.ceil((modifiedPixels / resolution) * 100)
@@ -740,12 +756,12 @@ export class Render {
             /**
              * The width of the image in pixels (4 bytes).
              */
-            ...toLittleEndian(screen.width), // 20 03 00 00
+            ...toLittleEndian(this.trmnlRequest.width), // 20 03 00 00
 
             /**
              * The height of the image in pixels (4 bytes).
              */
-            ...toLittleEndian(screen.height), // E0 01 00 00
+            ...toLittleEndian(this.trmnlRequest.height), // E0 01 00 00
 
             /**
              * Color planes, must be set to 1 (2 bytes).

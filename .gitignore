@@ -43,4 +43,5 @@ next-env.d.ts
 # temporary
 /public/img/*
 !/public/img/work
+!/public/img/steve
 /tmp

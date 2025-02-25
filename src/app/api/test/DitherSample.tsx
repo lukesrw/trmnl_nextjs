@@ -27,6 +27,7 @@ export function DitherSample() {
 
         $Items.push(
             <div
+                key={colour}
                 {...withTailwind(
                     `flex-1 flex justify-center items-center text-3xl ${textColour} ${colour}`
                 )}
