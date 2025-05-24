@@ -47,6 +47,6 @@ export async function display(trmnlRequest: TrmnlRequest) {
     return new Trmnl(trmnlRequest).display({
         url,
         filename,
-        refreshRate: 300
+        refreshRate: 60 * 60
     });
 }
