@@ -36,7 +36,7 @@ function getRandomSteveImage() {
 }
 
 function getRandomBPImage() {
-    const item = Math.floor(Math.random() * 44) + 1;
+    const item = Math.floor(Math.random() * 43) + 1;
 
     return join(process.cwd(), "public", "img", "bp", `${item}.png`);
 }
