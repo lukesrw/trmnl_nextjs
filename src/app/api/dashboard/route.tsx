@@ -6,5 +6,5 @@ export async function POST(request: NextRequest) {
 
     const image = await getScreen(data.config, data.mode);
 
-    return new Response(image as BodyInit);
+    return new Response(Buffer.from(image));
 }

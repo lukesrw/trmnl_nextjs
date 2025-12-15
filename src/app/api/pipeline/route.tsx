@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
                 image = await getDisplay(trmnlRequest, isDebug).toBmp();
         }
 
-        return new Response(image as BodyInit);
+        return new Response(Buffer.from(image));
     } catch (error) {
         return WhiteHouseResponse.attemptNextResponse(error);
     }
