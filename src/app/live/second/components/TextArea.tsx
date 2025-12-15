@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { useDevice } from "../page";
+import { useDevice } from "../hooks/useDevice";
 
 export namespace TextArea {
     export type Props = {

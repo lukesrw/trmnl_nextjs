@@ -4,7 +4,7 @@ import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PropsWithChildren } from "react";
 import { twMerge } from "tailwind-merge";
-import { useDevice } from "./page";
+import { useDevice } from "./hooks/useDevice";
 
 export namespace ModeButton {
     export type Props = PropsWithChildren<{

@@ -2,7 +2,7 @@ import { RenderOptions } from "@/types/Render/RenderOptions";
 import { objectKeys } from "@/utils/lib/objectKeys";
 import { FunctionComponent, ReactNode, useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { useDevice } from "../page";
+import { useDevice } from "../hooks/useDevice";
 import { TextArea } from "./TextArea";
 
 function InputHTML() {

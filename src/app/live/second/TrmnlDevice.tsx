@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { TrmnlLogo } from "./components/TrmnlLogo";
-import { useDevice } from "./page";
+import { useDevice } from "./hooks/useDevice";
 
 export function TrmnlDevice() {
     const { device, $Screen } = useDevice();
