@@ -33,7 +33,6 @@
         "@fortawesome/react-fontawesome": "^0.2.2",
         "@vercel/og": "^0.6.5",
         "html-react-parser": "^5.2.2",
-        "next-query-params": "^5.1.0",
         "playwright": "^1.50.1",
         "use-query-params": "^2.2.1"
     }

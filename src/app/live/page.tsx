@@ -20,7 +20,6 @@ import {
     useState
 } from "react";
 import { twMerge } from "tailwind-merge";
-import { useQueryParam } from "use-query-params";
 import { DitherSample } from "../api/test/DitherSample";
 
 function TrmnlScreen(
@@ -277,20 +276,8 @@ export default function Page() {
         DEVICES
     );
 
-    const [deviceId, setDeviceId] = useQueryParam<string | undefined>(
-        "device",
-        {
-            default: Object.keys(devices)[0],
-            encode(value) {
-                return value;
-            },
-            decode(value) {
-                if (!value || Array.isArray(value)) {
-                    return undefined;
-                }
-                return value;
-            }
-        }
+    const [deviceId, setDeviceId] = useState<string | undefined>(
+        Object.keys(devices)[0]
     );
 
     const device = deviceId ? devices[deviceId] : undefined;
