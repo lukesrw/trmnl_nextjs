@@ -47,8 +47,8 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: getRandomBPImage(),
-                isWhite: true
+                path: join(process.cwd(), "public", "img", "kids-modified.png"),
+                isWhite: false
             },
             //             frame: {
             //                 component(props: PropsWithChildren) {
@@ -85,7 +85,8 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
             //                 position: "center"
             //             },
             dither: {
-                method: ditherMethod.uniform4,
+                // radial or lowPalette
+                method: ditherMethod.lowPalette,
                 position: "center",
                 fit: "fill"
             }

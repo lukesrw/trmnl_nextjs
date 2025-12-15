@@ -11,7 +11,7 @@ export default {
             colors: {
                 background: "var(--background)",
                 foreground: "var(--foreground)",
-                trmnl: "#f27742"
+                trmnl: "#f8654b"
             },
             fontFamily: {
                 microma: "var(--font-microma)"

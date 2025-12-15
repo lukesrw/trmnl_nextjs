@@ -1,15 +1,16 @@
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import type { Metadata } from "next";
-import { Michroma } from "next/font/google";
+import { Genos } from "next/font/google";
+import { ReactNode } from "react";
 import "./globals.css";
 
 config.autoAddCss = false;
 
-const michroma = Michroma({
+const michroma = Genos({
     variable: "--font-microma",
     subsets: ["latin"],
-    weight: ["400"]
+    weight: ["300", "400", "500", "600", "700", "800"]
 });
 
 export const metadata: Metadata = {
@@ -20,12 +21,12 @@ export const metadata: Metadata = {
 export default function RootLayout({
     children
 }: Readonly<{
-    children: React.ReactNode;
+    children: ReactNode;
 }>) {
     return (
         <html lang="en">
             <body
-                className={`${michroma.variable} antialiased`}
+                className={`${michroma.variable} antialiased bg-trmnl`}
                 suppressHydrationWarning
             >
                 {children}
