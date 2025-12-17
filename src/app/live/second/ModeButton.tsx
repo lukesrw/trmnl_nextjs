@@ -20,18 +20,12 @@ export namespace ModeButton {
 export function ModeButton(props: Readonly<ModeButton.Props>) {
     const { device } = useDevice();
     const { backgroundColor, borderRadius } = device.style.frame;
-    let borderTopLeftRadius = borderRadius;
-    let borderTopRightRadius = borderRadius;
-    if (props.isActive && props.hasContent) {
-        borderTopLeftRadius = "0";
-        borderTopRightRadius = "0";
-    }
 
     return (
-        <div className="flex-1 relative group">
+        <div className="flex-1 relative group basis-0 min-w-0">
             <button
                 className={twMerge(
-                    "p-2 font-microma text-xl rounded-xl w-full text-black font-medium",
+                    "p-2 px-20 font-microma text-xl rounded-xl w-full text-black font-medium group/button relative",
                     props.isActive
                         ? ""
                         : "[&:not(:hover)]:!bg-transparent [&:not(:hover)]:!shadow-none opacity-50"
@@ -40,11 +34,18 @@ export function ModeButton(props: Readonly<ModeButton.Props>) {
                 style={{
                     backgroundColor,
                     borderRadius,
-                    borderTopLeftRadius,
-                    borderTopRightRadius
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0
                 }}
             >
                 {props.children}
+
+                <div
+                    className="left-0 h-full w-full absolute top-full pointer-events-none group-hover/button:opacity-100 opacity-0"
+                    style={{
+                        backgroundColor: device.style.frame.backgroundColor
+                    }}
+                ></div>
             </button>
 
             <button

@@ -24,7 +24,8 @@ export function getDevice<TDevice extends keyof typeof DEVICE>(
         style: {
             frame: {
                 width: `${sizeInVw.width}vw`,
-                minHeight: `${sizeInVw.height}vw`,
+                height: `${sizeInVw.height}vw`,
+                maxHeight: `${sizeInVw.height}vw`,
                 padding: `${sizeInVw.bezel}vw`,
                 paddingBottom: `${sizeInVw.bottom}vw`,
                 borderRadius: `${sizeInVw.bezel * 0.5}vw`,

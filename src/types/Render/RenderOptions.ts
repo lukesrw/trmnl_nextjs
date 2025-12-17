@@ -1,3 +1,4 @@
+import { ditherMethod } from "@/lib/dithering";
 import { Dimensions } from "@/utils/types/Screen";
 import { FunctionComponent, PropsWithChildren } from "react";
 import sharp from "sharp";
@@ -13,7 +14,9 @@ type RenderDitherOptions = {
      *
      * @todo consider supporting the ability for different dither methods to have options.
      */
-    method?: (buffer: Buffer<ArrayBufferLike>, dimensions: Dimensions) => void;
+    method?:
+        | keyof typeof ditherMethod
+        | ((buffer: Buffer<ArrayBufferLike>, dimensions: Dimensions) => void);
 } & Pick<sharp.ResizeOptions, "fit" | "position" | "width" | "height">;
 
 /**

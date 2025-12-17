@@ -26,19 +26,19 @@ let neilBag: number[] = [];
 function getRandomNeilImage() {
     const item = Math.floor(Math.random() * 10) + 1;
 
-    return join(process.cwd(), "public", "img", "work", `${item}.jpg`);
+    return join("work", `${item}.jpg`);
 }
 
 function getRandomSteveImage() {
     const item = Math.floor(Math.random() * 7) + 1;
 
-    return join(process.cwd(), "public", "img", "steve", `${item}.jpg`);
+    return join("steve", `${item}.jpg`);
 }
 
 function getRandomBPImage() {
     const item = Math.floor(Math.random() * 43) + 1;
 
-    return join(process.cwd(), "public", "img", "bp", `${item}.png`);
+    return join("bp", `${item}.png`);
 }
 
 export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join(process.cwd(), "public", "img", "kids-modified.png"),
+                path: getRandomBPImage(),
                 isWhite: false
             },
             //             frame: {

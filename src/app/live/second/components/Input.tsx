@@ -1,35 +1,120 @@
+import { getImages } from "@/app/server/getImages";
 import { RenderOptions } from "@/types/Render/RenderOptions";
 import { objectKeys } from "@/utils/lib/objectKeys";
-import { FunctionComponent, ReactNode, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import {
+    FunctionComponent,
+    PropsWithChildren,
+    ReactNode,
+    useEffect,
+    useState
+} from "react";
 import { twMerge } from "tailwind-merge";
 import { useDevice } from "../hooks/useDevice";
-import { TextArea } from "./TextArea";
+import { InputHTML } from "./InputHTML";
 
-function InputHTML() {
-    const { pipeline, setPipeline } = useDevice();
-    if (pipeline.input.type !== "html") {
+export namespace FolderButton {
+    export type Props = PropsWithChildren<{
+        setPath(): void;
+    }>;
+}
+
+function FolderButton(props: Readonly<FolderButton.Props>) {
+    const { device } = useDevice();
+
+    return (
+        <button
+            className="bg-yellow-400 aspect-[1.5]"
+            onClick={props.setPath}
+            style={{
+                borderRadius: device.style.frame.borderRadius
+            }}
+        >
+            {props.children}
+        </button>
+    );
+}
+
+function InputImage() {
+    const { device, pipeline, setPipeline } = useDevice();
+    if (pipeline.input.type !== "image") {
         return;
     }
 
+    const [path, setPath] = useState<string[]>([]);
+
+    const { isLoading, data } = useQuery({
+        queryKey: ["getImages", path],
+        async queryFn() {
+            const files = await getImages(path);
+
+            return files;
+        }
+    });
+
     return (
-        <TextArea
-            label="HTML Content"
-            value={pipeline.input.content}
+        <div
+            className="grid grid-cols-4 grid-flow-row overflow-y-auto max-h-[300px] gap-4"
             style={{
-                borderBottomRightRadius: "0"
+                borderRadius: device.style.frame.borderRadius
             }}
-            setValue={(value) => {
-                setPipeline((pipeline) => {
-                    return {
-                        ...pipeline,
-                        input: {
-                            ...pipeline.input,
-                            content: value
-                        }
-                    };
-                });
-            }}
-        ></TextArea>
+        >
+            {path.length > 0 && (
+                <FolderButton
+                    setPath={() => {
+                        setPath((path) => path.slice(0, path.length - 1));
+                    }}
+                >
+                    ..
+                </FolderButton>
+            )}
+            {data?.map((file) => {
+                switch (file.type) {
+                    case "directory":
+                        return (
+                            <FolderButton
+                                key={file.file}
+                                setPath={() => {
+                                    setPath((path) => {
+                                        return [...path, file.name];
+                                    });
+                                }}
+                            >
+                                {file.name}
+                            </FolderButton>
+                        );
+                }
+
+                return (
+                    <button
+                        key={file.file}
+                        className="relative aspect-[1.5] overflow-hidden"
+                        style={{
+                            borderRadius: device.style.frame.borderRadius
+                        }}
+                        onClick={() => {
+                            setPipeline((pipeline) => {
+                                return {
+                                    ...pipeline,
+                                    input: {
+                                        ...pipeline.input,
+                                        path: [...path, file.file].join("/")
+                                    }
+                                };
+                            });
+                        }}
+                    >
+                        <Image
+                            src={`/${file.path}`}
+                            alt={file.name}
+                            fill
+                            className="object-cover object-center"
+                        />
+                    </button>
+                );
+            })}
+        </div>
     );
 }
 
@@ -47,9 +132,7 @@ const INPUT_TYPES = {
         default: {
             path: ""
         },
-        Component: function () {
-            return <div>Image</div>;
-        }
+        Component: InputImage
     },
     jsx: {
         name: "JSX",
@@ -132,31 +215,23 @@ export function Input() {
 
     return (
         <div className="flex flex-col">
-            <div className="flex gap-4">
+            <div className="flex">
                 {objectKeys(INPUT_TYPES).map((type) => {
                     const isActive = pipeline.input.type === type;
-                    let borderBottomLeftRadius =
-                        device.style.frame.borderRadius;
-                    let borderBottomRightRadius =
-                        device.style.frame.borderRadius;
-                    if (isActive) {
-                        borderBottomLeftRadius = "0";
-                        borderBottomRightRadius = "0";
-                    }
 
                     return (
                         <button
                             key={type}
                             className={twMerge(
-                                "flex-1 p-2 px-4 font-microma text-xl bg-white font-medium",
+                                "flex-1 p-2 px-4 font-microma text-xl bg-white font-medium relative group/type",
                                 isActive
                                     ? ""
                                     : "[&:not(:hover)]:!bg-transparent opacity-50 hover:opacity-50"
                             )}
                             style={{
                                 borderRadius: device.style.frame.borderRadius,
-                                borderBottomLeftRadius,
-                                borderBottomRightRadius
+                                borderBottomLeftRadius: 0,
+                                borderBottomRightRadius: 0
                             }}
                             onClick={() => {
                                 setPipeline((pipeline) => {
@@ -174,13 +249,15 @@ export function Input() {
                             }}
                         >
                             {INPUT_TYPES[type].name}
+
+                            <div className="bg-white opacity-0 group-hover/type:opacity-100 absolute left-0 top-full h-full w-full pointer-events-none"></div>
                         </button>
                     );
                 })}
             </div>
 
             <div
-                className="flex-1 bg-white overflow-hidden p-4"
+                className="flex-1 bg-white overflow-hidden p-4 z-50"
                 style={{
                     borderRadius: device.style.frame.borderRadius,
                     borderTopLeftRadius:
@@ -191,7 +268,9 @@ export function Input() {
                         pipeline.input.type ===
                         Object.keys(INPUT_TYPES).slice(-1)[0]
                             ? "0"
-                            : device.style.frame.borderRadius
+                            : device.style.frame.borderRadius,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0
                 }}
             >
                 {$Controls}

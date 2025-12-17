@@ -8,9 +8,11 @@ import { RenderOptions } from "@/types/Render/RenderOptions";
 import { INCHES_PER_METER } from "@/utils/data/unit";
 import { toLittleEndian } from "@/utils/toLittleEndian";
 import { ImageResponseOptions } from "next/server";
+import { join } from "path";
 import { CSSProperties } from "react";
 import sharp, { Sharp } from "sharp";
 import { screen } from "./data/TRMNL";
+import { ditherMethod } from "./dithering";
 
 export class Render {
     /**
@@ -99,7 +101,7 @@ export class Render {
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            fontSize: 36,
+                            fontSize: 34,
                             padding: 64
                         }}
                         children={message}
@@ -317,7 +319,18 @@ export class Render {
                 const { readFile } = await import("fs/promises");
 
                 try {
-                    const buffer = await readFile(this.config.input.path);
+                    if (this.config.input.path.length === 0) {
+                        throw new Error("Empty image path");
+                    }
+
+                    const buffer = await readFile(
+                        join(
+                            process.cwd(),
+                            "public",
+                            "img",
+                            this.config.input.path
+                        )
+                    );
 
                     this._input = Render.fromBuffer(
                         {
@@ -514,13 +527,18 @@ export class Render {
         const input = await this.getFramed();
 
         if (this.debug?.dither) {
+            let name = this.config.dither?.method as string | Function;
+            if (typeof name === "function") {
+                name = name.name;
+            }
+
             console.table({
                 Dither: {
                     Width: this.config.dither?.width,
                     Height: this.config.dither?.height,
                     Fit: this.config.dither?.fit,
                     Position: this.config.dither?.position,
-                    Method: this.config.dither?.method?.name
+                    Method: name
                 }
             });
         }
@@ -544,10 +562,17 @@ export class Render {
             /**
              * Apply dithering to the image if a function was provided.
              */
-            this.config.dither.method(ditheredBuffer, {
-                width,
-                height
-            });
+            if (typeof this.config.dither.method === "function") {
+                this.config.dither.method(ditheredBuffer, {
+                    width,
+                    height
+                });
+            } else {
+                ditherMethod[this.config.dither.method](ditheredBuffer, {
+                    width,
+                    height
+                });
+            }
 
             this._dithered = await sharp(ditheredBuffer, {
                 raw: {

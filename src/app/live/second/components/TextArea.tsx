@@ -20,12 +20,11 @@ export function TextArea(props: Readonly<TextArea.Props>) {
                 {props.label}
             </span>
             <textarea
-                className="mt-2 p-4 w-full whitespace-pre font-mono outline-none"
+                className="mt-2 p-4 w-full whitespace-pre font-mono outline-none border-trmnl border-2"
                 value={props.value}
                 rows={props.rows}
                 onChange={(e) => props.setValue(e.currentTarget.value)}
                 style={{
-                    border: `2px solid ${device.color}`,
                     borderRadius: device.style.frame.borderRadius,
                     borderBottomRightRadius: "0",
                     ...props.style
