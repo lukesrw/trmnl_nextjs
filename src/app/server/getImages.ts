@@ -35,7 +35,6 @@ export async function getImages(path: string[]) {
             name = file.substring(0, lastDot);
 
             const suffix = file.substring(lastDot);
-            console.log(suffix);
             if (!IMAGE_SUFFIX.includes(suffix)) {
                 return false;
             }

@@ -5,15 +5,15 @@ import { ReactNode, useState } from "react";
 import { getDevice } from "./getDevice";
 import { DeviceProvider } from "./hooks/useDevice";
 import { ModeButton } from "./ModeButton";
-import { MODES } from "./MODES";
+import { ModeIndex, MODES } from "./MODES";
 import { TrmnlDevice } from "./TrmnlDevice";
 
 const queryClient = new QueryClient();
 
 export default function Page() {
     const device = getDevice("og", "sage");
-    const [viewMode, setViewMode] = useState(4);
-    const [currentMode, setCurrentMode] = useState(4);
+    const [viewMode, setViewMode] = useState<ModeIndex>(2);
+    const [currentMode, setCurrentMode] = useState<ModeIndex>(2);
     const [$Tab, set$Tab] = useState<ReactNode>(null);
 
     return (
@@ -30,6 +30,8 @@ export default function Page() {
                     >
                         <div className="flex z-0">
                             {MODES.map((mode, index) => {
+                                const modeIndex = index as ModeIndex;
+
                                 return (
                                     <ModeButton
                                         key={mode.name}
@@ -37,9 +39,9 @@ export default function Page() {
                                         isActive={currentMode === index}
                                         isViewActive={viewMode === index}
                                         setIsActive={() => {
-                                            setCurrentMode(index);
+                                            setCurrentMode(modeIndex);
                                             if (viewMode < index) {
-                                                setViewMode(index);
+                                                setViewMode(modeIndex);
                                             }
 
                                             if ("Component" in mode) {
@@ -51,7 +53,7 @@ export default function Page() {
                                             }
                                         }}
                                         setIsViewActive={() => {
-                                            setViewMode(index);
+                                            setViewMode(modeIndex);
                                         }}
                                         hasContent={index !== 4}
                                     >

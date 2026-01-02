@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: getRandomBPImage(),
+                path: join("step-2.png"),
                 isWhite: false
             },
             //             frame: {

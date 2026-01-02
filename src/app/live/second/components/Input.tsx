@@ -122,8 +122,10 @@ const INPUT_TYPES = {
     html: {
         name: "HTML",
         default: {
-            content: `<div><h2>Hello World</h2>
-                <p>Welcome to my TED Talk!</p></div>`
+            content: `<div>
+                    <h2>Hello World</h2>
+                    <p>Welcome to my TED Talk!</p>
+                </div>`
         },
         Component: InputHTML
     },

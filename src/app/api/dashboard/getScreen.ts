@@ -12,16 +12,10 @@ export async function getScreen(
     const render = new Render(TrmnlRequest.mock(), config);
 
     switch (mode) {
-        case "Input":
+        case "Choose":
             return await render.toInput();
 
-        case "Frame":
-            return await render.toFramed();
-
-        case "Dither":
-            return await render.toDithered();
-
-        case "Threshold":
+        case "Style":
             return await render.toThresholded();
 
         default:

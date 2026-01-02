@@ -12,7 +12,7 @@ import {
     useState
 } from "react";
 import { getDevice } from "../getDevice";
-import { MODES } from "../MODES";
+import { MODES, ModeIndex } from "../MODES";
 
 type DeviceContextValue = {
     device: ReturnType<typeof getDevice>;
@@ -28,7 +28,7 @@ const DeviceContext = createContext<DeviceContextValue | null>(null);
 export function DeviceProvider(
     props: PropsWithChildren<{
         device: DeviceContextValue["device"];
-        viewMode: number;
+        viewMode: ModeIndex;
     }>
 ) {
     const [pipeline, setPipeline] = useState<RenderOptions>({

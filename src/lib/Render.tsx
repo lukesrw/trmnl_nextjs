@@ -5,7 +5,7 @@ import {
     RenderInputJsx
 } from "@/types/Render/RenderInput";
 import { RenderOptions } from "@/types/Render/RenderOptions";
-import { INCHES_PER_METER } from "@/utils/data/unit";
+import { INCHES_PER_METER } from "@/utils/data/INCHES_PER_METER";
 import { toLittleEndian } from "@/utils/toLittleEndian";
 import { ImageResponseOptions } from "next/server";
 import { join } from "path";
@@ -320,7 +320,7 @@ export class Render {
 
                 try {
                     if (this.config.input.path.length === 0) {
-                        throw new Error("Empty image path");
+                        throw new Error("Choose an image");
                     }
 
                     const buffer = await readFile(
