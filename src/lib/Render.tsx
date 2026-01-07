@@ -8,11 +8,10 @@ import { RenderOptions } from "@/types/Render/RenderOptions";
 import { INCHES_PER_METER } from "@/utils/data/INCHES_PER_METER";
 import { toLittleEndian } from "@/utils/toLittleEndian";
 import { ImageResponseOptions } from "next/server";
-import { join } from "path";
-import { CSSProperties } from "react";
 import sharp, { Sharp } from "sharp";
 import { screen } from "./data/TRMNL";
 import { ditherMethod } from "./dithering";
+import { INPUTS } from "./RenderInput";
 
 export class Render {
     /**
@@ -240,204 +239,15 @@ export class Render {
             return this._input;
         }
 
-        switch (this.config.input.type) {
-            case "buffer":
-                this._input = Render.fromBuffer(
-                    this.config.input,
-                    this.debug?.input
-                );
-                break;
-
-            case "text":
-                const { content: value } = this.config.input;
-                const style: CSSProperties = this.config.input.style ?? {};
-                style.color = style.color ?? "#000";
-                style.fontSize = style.fontSize ?? 48;
-                style.background = style.color === "#FFF" ? "#000" : "#FFF";
-
-                if (this.config.input.isWhite === undefined) {
-                    this.config.input.isWhite = style.background === "#FFF";
-                }
-
-                if (this.debug?.input) {
-                    console.table({
-                        Input: {
-                            Type: "Text",
-                            Value: value,
-                            Style: JSON.stringify(style),
-                            "Is White": this.config.input.isWhite,
-                            Time: new Date().toISOString()
-                        }
-                    });
-                }
-
-                this._input = await this.fromJsx(
-                    {
-                        type: "jsx",
-                        component: () => {
-                            return (
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        ...style
-                                    }}
-                                    children={value}
-                                />
-                            );
-                        },
-                        isWhite: this.config.input.isWhite
-                    },
-                    undefined,
-                    this.debug?.input
-                );
-                break;
-
-            case "jsx":
-                this._input = await this.fromJsx(
-                    this.config.input,
-                    undefined,
-                    this.debug?.input
-                );
-                break;
-
-            case "image":
-                if (this.debug?.input) {
-                    console.table({
-                        Input: {
-                            Type: "Image",
-                            Path: this.config.input.path,
-                            "Is White": this.config.input.isWhite,
-                            Time: new Date().toISOString()
-                        }
-                    });
-                }
-
-                const { readFile } = await import("fs/promises");
-
-                try {
-                    if (this.config.input.path.length === 0) {
-                        throw new Error("Choose an image");
-                    }
-
-                    const buffer = await readFile(
-                        join(
-                            process.cwd(),
-                            "public",
-                            "img",
-                            this.config.input.path
-                        )
-                    );
-
-                    this._input = Render.fromBuffer(
-                        {
-                            data: buffer,
-                            type: "buffer",
-                            isWhite: this.config.input.isWhite
-                        },
-                        this.debug?.input
-                    );
-                } catch (error) {
-                    this._input = await this.fromError(
-                        {
-                            type: "error",
-                            cause: error,
-                            isWhite: this.config.input.isWhite
-                        },
-                        this.debug?.input
-                    );
-                }
-                break;
-
-            case "url":
-                if (this.debug?.input) {
-                    console.table({
-                        Input: {
-                            Type: "URL",
-                            URL: this.config.input.url,
-                            Wait: this.config.input.wait,
-                            Width: this.config.input.width,
-                            Height: this.config.input.height,
-                            "Is White": this.config.input.isWhite,
-                            Time: new Date().toISOString()
-                        }
-                    });
-                }
-
-                const { chromium } = await import("playwright");
-
-                const browser = await chromium.launch({ headless: true });
-                const context = await browser.newContext({
-                    viewport: {
-                        width:
-                            this.config.input.width ?? this.trmnlRequest.width,
-                        height:
-                            this.config.input.height ?? this.trmnlRequest.height
-                    },
-                    acceptDownloads: false,
-                    colorScheme: this.config.input.isWhite ? "light" : "dark"
-                });
-
-                const page = await context.newPage();
-                await page.goto(this.config.input.url);
-                await page.waitForTimeout(this.config.input.wait ?? 1e3);
-                const buffer = await page.screenshot();
-                await browser.close();
-
-                this._input = Render.fromBuffer(
-                    {
-                        type: "buffer",
-                        data: buffer,
-                        isWhite: this.config.input.isWhite
-                    },
-                    this.debug?.input
-                );
-                break;
-
-            case "error":
-                this._input = await this.fromError(
-                    this.config.input,
-                    this.debug?.input
-                );
-                break;
-
-            case "html":
-                if (this.debug?.input) {
-                    console.table({
-                        Input: {
-                            Type: "HTML",
-                            Content: this.config.input.content.substring(
-                                0,
-                                this.config.input.content.indexOf("\n")
-                            ),
-                            Time: new Date().toISOString()
-                        }
-                    });
-                }
-
-                const { default: htmlReactParser } = await import(
-                    "html-react-parser"
-                );
-
-                const html = this.config.input.content;
-
-                this._input = await this.fromJsx({
-                    type: "jsx",
-                    component() {
-                        return htmlReactParser(html);
-                    },
-                    height: this.config.input.height,
-                    isWhite: this.config.input.isWhite,
-                    width: this.config.input.width
-                });
-                break;
-        }
-
-        if (this.debug?.input) {
-            console.groupEnd();
+        try {
+            this._input = await INPUTS[this.config.input.type](
+                this.config.input as any
+            )(this.trmnlRequest.width, this.trmnlRequest.height);
+        } catch (error) {
+            this._input = await INPUTS.error({
+                cause: error,
+                type: "error"
+            })(this.trmnlRequest.width, this.trmnlRequest.height);
         }
 
         return this._input;
@@ -520,6 +330,8 @@ export class Render {
         if (this._dithered !== null) {
             return this._dithered;
         }
+
+        this.config.input.isWhite = true;
 
         const width = this.config.dither?.width ?? this.trmnlRequest.width;
         const height = this.config.dither?.height ?? this.trmnlRequest.height;

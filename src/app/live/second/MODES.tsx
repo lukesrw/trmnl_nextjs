@@ -1,4 +1,5 @@
 import { ditherMethod } from "@/lib/dithering";
+import { RenderDither } from "@/types/Render/RenderDither";
 import { objectKeys } from "@/utils/lib/objectKeys";
 import { ArrayIndexes } from "@/utils/types/ArrayIndexes";
 import { ChangeEvent, useCallback } from "react";
@@ -41,6 +42,57 @@ function Dither() {
             </select>
 
             <Threshold />
+
+            <select
+                value={pipeline.dither?.fit}
+                onChange={(e) => {
+                    const fit = e.currentTarget.value as RenderDither["fit"];
+
+                    setPipeline((pipeline) => {
+                        return {
+                            ...pipeline,
+                            dither: {
+                                ...pipeline.dither,
+                                fit
+                            }
+                        };
+                    });
+                }}
+            >
+                <option value="cover">Cover</option>
+                <option value="contain">Contain</option>
+                <option value="fill">Fill</option>
+                <option value="inside">Inside</option>
+                <option value="outside">Outside</option>
+            </select>
+
+            <select
+                value={pipeline.dither?.position}
+                onChange={(e) => {
+                    const position = e.currentTarget
+                        .value as RenderDither["position"];
+
+                    setPipeline((pipeline) => {
+                        return {
+                            ...pipeline,
+                            dither: {
+                                ...pipeline.dither,
+                                position
+                            }
+                        };
+                    });
+                }}
+            >
+                <option value="top">top</option>
+                <option value="left top">top left</option>
+                <option value="right top">top right</option>
+                <option value="left">left</option>
+                <option value="center">center</option>
+                <option value="right">right</option>
+                <option value="left bottom">bottom left</option>
+                <option value="right bottom">bottom right</option>
+                <option value="bottom">bottom</option>
+            </select>
         </div>
     );
 }

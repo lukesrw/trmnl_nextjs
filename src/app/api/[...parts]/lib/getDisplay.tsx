@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join("step-2.png"),
+                path: join("kids-modified.png"),
                 isWhite: false
             },
             //             frame: {

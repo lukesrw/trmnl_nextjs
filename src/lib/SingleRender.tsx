@@ -1,15 +1,34 @@
+import { TrmnlRequest } from "@/app/api/lib/TrmnlRequest";
 import { RenderDither } from "@/types/Render/RenderDither";
 import { RenderInput } from "@/types/Render/RenderInput";
-import { RenderThresholdOptions } from "@/types/Render/RenderThreshold";
-import { CSSProperties } from "react";
+import { RenderThreshold } from "@/types/Render/RenderThreshold";
 
-export type SingleRenderConfig = RenderInput & {
+type RenderConfig<TRenderInput extends object> = TRenderInput & {
     dither?: RenderDither;
-    threshold?: RenderThresholdOptions;
+    threshold?: RenderThreshold;
 };
 
-type GridRenderConfig = {
-    style: Pick<CSSProperties, "gap" | "flexDirection" | "flex">;
+// export type SingleRenderConfig = RenderConfig<RenderInput>;
+
+export type RenderContainerConfig = {
+    children: Array<
+        (RenderConfig<RenderInput> | RenderContainerConfig) & {
+            flex: number;
+        }
+    >;
+    gap?: number;
+    isColumn?: boolean;
 };
 
-type MultiRenderConfig = {};
+export class Render {
+    constructor(
+        private trmnlRequest: TrmnlRequest,
+        private config: RenderConfig<RenderContainerConfig>,
+        private debug?: {
+            input?: boolean;
+            dither?: boolean;
+            threshold?: boolean;
+            bmp?: boolean;
+        }
+    ) {}
+}

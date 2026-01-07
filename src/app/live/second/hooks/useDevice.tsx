@@ -1,7 +1,6 @@
 import { getScreen } from "@/app/api/dashboard/getScreen";
 import { RenderOptions } from "@/types/Render/RenderOptions";
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@uidotdev/usehooks";
 import {
     Dispatch,
     JSX,
@@ -9,6 +8,7 @@ import {
     SetStateAction,
     createContext,
     useContext,
+    useMemo,
     useState
 } from "react";
 import { getDevice } from "../getDevice";
@@ -38,16 +38,16 @@ export function DeviceProvider(
             isWhite: false
         }
     });
-    const queryKey = useDebounce([pipeline, props.viewMode], 1e3);
+    // const queryKey = useDebounce([pipeline, props.viewMode], 1e3);
 
     const $Screen = useQuery({
-        queryKey,
+        queryKey: [pipeline, props.viewMode],
         async queryFn() {
             const data = await getScreen(pipeline, MODES[props.viewMode].name);
 
             return (
                 <img
-                    className="w-full"
+                    className="w-full h-full bg-transparent"
                     src={URL.createObjectURL(
                         new Blob([new Uint8Array(data)], {
                             type: "image/bmp"
@@ -55,22 +55,27 @@ export function DeviceProvider(
                     )}
                     alt=""
                     style={{
-                        imageRendering: "pixelated"
+                        imageRendering: "pixelated",
+                        objectPosition: "center",
+                        objectFit: "contain"
                     }}
                 />
             );
         }
     });
 
+    const value = useMemo(
+        () => ({
+            device: props.device,
+            pipeline,
+            setPipeline,
+            $Screen
+        }),
+        [props.device, pipeline, props.device.style.frame.backgroundColor]
+    );
+
     return (
-        <DeviceContext.Provider
-            value={{
-                device: props.device,
-                pipeline,
-                setPipeline,
-                $Screen
-            }}
-        >
+        <DeviceContext.Provider value={value}>
             {props.children}
         </DeviceContext.Provider>
     );
