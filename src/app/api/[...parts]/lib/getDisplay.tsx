@@ -46,8 +46,11 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         trmnlRequest,
         {
             input: {
-                type: "image",
-                path: join("candle.jpg"),
+                type: "html",
+                content: `<div style="display: flex; justify-content: center; align-items: center; font-size: 7rem; flex-direction: column; gap: 0.5rem;">
+                    <span>Hi Naama! 👋🏻</span>
+                    <span style="font-size: 0.2em; text-align: center; width: 80%;">( I'm very jealous of your English ability, I hope that one day my Hebrew is as good as your English is )</span>
+                </div>`,
                 isWhite: false
             },
             //             frame: {
@@ -86,7 +89,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
             //             },
             dither: {
                 // radial or lowPalette
-                method: ditherMethod.zigZag,
+                method: ditherMethod.basic,
                 position: "center",
                 fit: "cover"
             }
