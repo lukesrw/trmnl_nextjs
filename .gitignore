@@ -49,4 +49,5 @@ next-env.d.ts
 !/public/img/kids-modified.png
 !/public/img/shalom.png
 !/public/img/avatar.webp
+!/public/img/unicorn.jpg
 /tmp

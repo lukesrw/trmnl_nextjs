@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join("avatar.webp"),
+                path: join("unicorn.jpg"),
                 isWhite: false
             },
             //             frame: {
@@ -86,9 +86,9 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
             //             },
             dither: {
                 // radial or lowPalette
-                method: ditherMethod.basic,
+                method: ditherMethod.radial,
                 position: "center",
-                fit: "cover"
+                fit: "contain"
             }
         },
         {
