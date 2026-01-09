@@ -50,4 +50,5 @@ next-env.d.ts
 !/public/img/shalom.png
 !/public/img/avatar.webp
 !/public/img/unicorn.jpg
+!/public/img/candle.jpg
 /tmp

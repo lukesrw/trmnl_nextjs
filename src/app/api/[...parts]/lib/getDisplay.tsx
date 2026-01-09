@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join("unicorn.jpg"),
+                path: join("candle.jpg"),
                 isWhite: false
             },
             //             frame: {
@@ -86,9 +86,9 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
             //             },
             dither: {
                 // radial or lowPalette
-                method: ditherMethod.radial,
+                method: ditherMethod.zigZag,
                 position: "center",
-                fit: "contain"
+                fit: "cover"
             }
         },
         {
