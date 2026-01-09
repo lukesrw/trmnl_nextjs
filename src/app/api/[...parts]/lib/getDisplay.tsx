@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join("kids-modified.png"),
+                path: join("shalom.png"),
                 isWhite: false
             },
             //             frame: {
@@ -88,7 +88,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
                 // radial or lowPalette
                 method: ditherMethod.lowPalette,
                 position: "center",
-                fit: "fill"
+                fit: "contain"
             }
         },
         {

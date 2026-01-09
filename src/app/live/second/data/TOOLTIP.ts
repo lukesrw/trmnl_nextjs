@@ -6,5 +6,7 @@ export const TOOLTIP = {
     increase_gap: "Increase Gap",
     decrease_gap: "Decrease Gap",
     remove_row: "Remove Row",
-    remove_column: "Remove Column"
+    remove_column: "Remove Column",
+    increaseWidth: "Increase Width",
+    decreaseWidth: "Decrease Width"
 };

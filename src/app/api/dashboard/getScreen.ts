@@ -6,10 +6,17 @@ import { RenderOptions } from "@/types/Render/RenderOptions";
 import { TrmnlRequest } from "../lib/TrmnlRequest";
 
 export async function getScreen(
+    width: number,
+    height: number,
     config: RenderOptions,
     mode: (typeof MODES)[number]["name"]
 ) {
-    const render = new Render(TrmnlRequest.mock(), config);
+    const trmnlRequest = TrmnlRequest.mock({
+        width,
+        height
+    });
+
+    const render = new Render(trmnlRequest, config);
 
     switch (mode) {
         case "Choose":

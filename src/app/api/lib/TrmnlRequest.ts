@@ -56,9 +56,7 @@ export class TrmnlRequest {
         this.id = request.headers.get("id");
         this.rssi = Number(request.headers.get("rssi"));
         this.userAgent = request.headers.get("user-agent");
-        this.isSpecialFunction = Boolean(
-            request.headers.get("special-function")
-        );
+        this.isSpecialFunction = Boolean(request.headers.get("special-function"));
         // prettier-ignore
         this.isBase64 = request.nextUrl.searchParams.get("base64") === "1";
         this.width = Number(request.headers.get("width") ?? screen.width);
@@ -98,26 +96,31 @@ export class TrmnlRequest {
              */
             const minimum = 3.2;
 
-            this.batteryPercentage = Math.floor(
-                ((this.batteryVoltage - minimum) / (maximum - minimum)) * 100
-            );
+            this.batteryPercentage = Math.floor(((this.batteryVoltage - minimum) / (maximum - minimum)) * 100);
 
             if (this.batteryPercentage > 100) {
-                console.warn(
-                    `Warning: Battery voltage is ${this.batteryVoltage}V`
-                );
+                console.warn(`Warning: Battery voltage is ${this.batteryVoltage}V`);
             }
         } else {
             this.batteryPercentage = Math.floor(Math.random() * 100);
         }
     }
 
-    static mock() {
+    static mock(mockHeaders?: { width?: number; height?: number }) {
+        const headers: Record<string, string> = {
+            host: "www.example.com"
+        };
+
+        if (mockHeaders?.width) {
+            headers["width"] = `${mockHeaders.width}`;
+        }
+        if (mockHeaders?.height) {
+            headers["height"] = `${mockHeaders.height}`;
+        }
+
         return new TrmnlRequest(
             new NextRequest(new URL(`https://www.example.com`), {
-                headers: {
-                    host: "www.example.com"
-                }
+                headers
             })
         );
     }

@@ -8,6 +8,11 @@ export const DEVICE = {
             bezel: 0.7,
             bottom: 1.3
         },
+        screen: {
+            width: 800,
+            height: 480,
+            dpi: 72
+        },
         colors: COLOR
     }
 } as const;

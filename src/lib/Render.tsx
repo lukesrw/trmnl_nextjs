@@ -1,9 +1,5 @@
 import { TrmnlRequest } from "@/app/api/lib/TrmnlRequest";
-import {
-    RenderInputBuffer,
-    RenderInputError,
-    RenderInputJsx
-} from "@/types/Render/RenderInput";
+import { RenderInputBuffer, RenderInputError, RenderInputJsx } from "@/types/Render/RenderInput";
 import { RenderOptions } from "@/types/Render/RenderOptions";
 import { INCHES_PER_METER } from "@/utils/data/INCHES_PER_METER";
 import { toLittleEndian } from "@/utils/toLittleEndian";
@@ -70,10 +66,7 @@ export class Render {
         }
     }
 
-    private async fromError(
-        input: RenderInputError,
-        isDebug = false
-    ): Promise<Buffer<ArrayBufferLike>> {
+    private async fromError(input: RenderInputError, isDebug = false): Promise<Buffer<ArrayBufferLike>> {
         let message = "Oops, we couldn't render that!";
         if (input.cause instanceof Error) {
             message = input.cause.message;
@@ -156,21 +149,19 @@ export class Render {
             }
 
             const buffer = await new ImageResponse(
-                (
-                    <div
-                        style={{
-                            display: "flex",
-                            width: "100%",
-                            height: "100%",
-                            background: input.isWhite ? "#FFF" : "#000",
-                            color: input.isWhite ? "#000" : "#FFF",
-                            justifyContent: "center",
-                            alignItems: "center"
-                        }}
-                    >
-                        {$Component}
-                    </div>
-                ),
+                <div
+                    style={{
+                        display: "flex",
+                        width: "100%",
+                        height: "100%",
+                        background: input.isWhite ? "#FFF" : "#000",
+                        color: input.isWhite ? "#000" : "#FFF",
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}
+                >
+                    {$Component}
+                </div>,
                 options
             )
                 .arrayBuffer()
@@ -201,15 +192,10 @@ export class Render {
     private static getBufferSample(buffer: Buffer<ArrayBufferLike>) {
         return `${String.fromCharCode(buffer[0])}${String.fromCharCode(
             buffer[1]
-        )}${String.fromCharCode(buffer[2])}${String.fromCharCode(
-            buffer[3]
-        )}`.replace(String.fromCharCode(0x89), "");
+        )}${String.fromCharCode(buffer[2])}${String.fromCharCode(buffer[3])}`.replace(String.fromCharCode(0x89), "");
     }
 
-    private static fromBuffer(
-        input: RenderInputBuffer,
-        isDebug = false
-    ): Buffer<ArrayBufferLike> {
+    private static fromBuffer(input: RenderInputBuffer, isDebug = false): Buffer<ArrayBufferLike> {
         if (isDebug) {
             console.table({
                 Input: {
@@ -240,9 +226,10 @@ export class Render {
         }
 
         try {
-            this._input = await INPUTS[this.config.input.type](
-                this.config.input as any
-            )(this.trmnlRequest.width, this.trmnlRequest.height);
+            this._input = await INPUTS[this.config.input.type](this.config.input as any)(
+                this.trmnlRequest.width,
+                this.trmnlRequest.height
+            );
         } catch (error) {
             this._input = await INPUTS.error({
                 cause: error,
@@ -284,8 +271,8 @@ export class Render {
 
         const content = await sharp(input)
             .resize({
-                width: this.config.frame.width ?? this.trmnlRequest.width,
-                height: this.config.frame.height ?? this.trmnlRequest.height,
+                width: screen.width ?? this.config.frame.width ?? this.trmnlRequest.width,
+                height: screen.height ?? this.config.frame.height ?? this.trmnlRequest.height,
                 fit: this.config.frame.fit ?? "cover",
                 position: this.config.frame.position ?? "center",
                 background: this.config.input.isWhite ? "#FFF" : "#000"
@@ -297,14 +284,7 @@ export class Render {
             {
                 type: "jsx",
                 component() {
-                    return (
-                        <img
-                            src={`data:image/png;base64,${content.toString(
-                                "base64"
-                            )}`}
-                            tw="w-full h-full"
-                        />
-                    );
+                    return <img src={`data:image/png;base64,${content.toString("base64")}`} tw="w-full h-full" />;
                 },
                 // frame: this.config.input.frame,
                 isWhite: this.config.input.isWhite
@@ -331,10 +311,8 @@ export class Render {
             return this._dithered;
         }
 
-        this.config.input.isWhite = true;
-
-        const width = this.config.dither?.width ?? this.trmnlRequest.width;
-        const height = this.config.dither?.height ?? this.trmnlRequest.height;
+        const width = screen.width ?? this.config.dither?.width ?? this.trmnlRequest.width;
+        const height = screen.height ?? this.config.dither?.height ?? this.trmnlRequest.height;
         const background = this.config.input.isWhite ? "#FFF" : "#000";
         const input = await this.getFramed();
 
@@ -437,8 +415,7 @@ export class Render {
         this._threshold = await dithered
             .resize({
                 width: this.config.threshold?.width ?? this.trmnlRequest.width,
-                height:
-                    this.config.threshold?.height ?? this.trmnlRequest.height,
+                height: this.config.threshold?.height ?? this.trmnlRequest.height,
                 fit: this.config.threshold?.fit ?? "cover",
                 position: this.config.threshold?.position ?? "center"
             })
@@ -494,10 +471,7 @@ export class Render {
         // prettier-ignore
         const pixelBufferSize = (rowSize + rowBuffer) * this.trmnlRequest.height;
         const isForeground = this.config.input.isWhite ? 0 : 255;
-        const pixelBuffer = Buffer.alloc(
-            pixelBufferSize,
-            this.config.input.isWhite ? 255 : 0
-        );
+        const pixelBuffer = Buffer.alloc(pixelBufferSize, this.config.input.isWhite ? 255 : 0);
         let modifiedPixels = 0;
         for (let y = 0; y < this.trmnlRequest.height; y++) {
             const yIndex = y * this.trmnlRequest.width;
@@ -535,16 +509,12 @@ export class Render {
             console.warn(
                 `Modified ${Math.ceil(
                     (modifiedPixels / resolution) * 100
-                )}% of the screen, consider changing \`isWhite\` to ${
-                    this.config.input.isWhite ? "false" : "true"
-                }`
+                )}% of the screen, consider changing \`isWhite\` to ${this.config.input.isWhite ? "false" : "true"}`
             );
         }
 
         const bitmapHeaderSize = 62;
-        const printResolution = Math.ceil(
-            (this.config.bmp?.dpi ?? screen.dpi) * INCHES_PER_METER
-        );
+        const printResolution = Math.ceil((this.config.bmp?.dpi ?? screen.dpi) * INCHES_PER_METER);
         const fileSize = bitmapHeaderSize + pixelBufferSize;
 
         if (this.debug?.bmp) {

@@ -1,58 +1,76 @@
-import {
-    faImage,
-    faQuestion,
-    faTableCellsLarge
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { twMerge } from "tailwind-merge";
-import { GapControlButton } from "./GapControlButton";
+import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Dispatch, useState } from "react";
+import { TOOLTIP } from "../data/TOOLTIP";
+import { AreaHighlight } from "./AreaHighlight";
+import { Control } from "./Control";
+import { ControlButton } from "./ControlButton";
+import { ControlShadow } from "./ControlShadow";
 
 export function RenderControl(props: Readonly<RenderControl.Props>) {
-    const position = [
-        "left-1/2 -translate-x-1/2",
-        props.isColumn ? "right-4" : "bottom-4"
-    ];
-
-    if (props.isColumn) {
-        position[0] = "top-1/2 -translate-y-1/2";
-    }
-    if (props.isContainer) {
-        position[1] = props.isColumn ? "right-4" : "top-4";
-    }
+    const [mode, setMode] = useState<AreaHighlight.Props["mode"]>();
 
     return (
-        <div
-            className={twMerge(
-                "absolute opacity-20 hover:opacity-100 flex justify-center items-center",
-                props.isColumn ? "h-full" : "w-full",
-                position[0],
-                position[1]
-            )}
-            style={{
-                height: GapControlButton.SIZE
-            }}
-        >
-            <div
-                className={twMerge(
-                    "flex shadow-black/50 shadow-sm",
-                    props.isColumn ? "flex-col" : ""
-                )}
+        <>
+            <Control
+                className={
+                    props.isColumn
+                        ? "right-0 top-1/2 h-full -translate-y-1/2"
+                        : "bottom-0 left-1/2 w-full -translate-x-1/2"
+                }
+                style={{
+                    height: ControlButton.SIZE,
+                    gap: ControlButton.SIZE * 0.5
+                }}
             >
-                <FontAwesomeIcon
-                    icon={props.isContainer ? faTableCellsLarge : faImage}
-                />
-                <GapControlButton icon={faQuestion} onClick={() => {}} />
+                <ControlShadow
+                    isColumn={!props.isColumn}
+                    className={props.isColumn ? "rounded-r-none" : "rounded-b-none"}
+                >
+                    <ControlButton
+                        icon={faPlus}
+                        onClick={() => props.setFlex((props.flex ?? 1) + 1)}
+                        tooltip={{
+                            content: TOOLTIP.increaseWidth,
+                            place: "top"
+                        }}
+                    />
+                    <ControlButton
+                        icon={faMinus}
+                        isDisabled={props.flex === 1}
+                        tooltip={{
+                            content: TOOLTIP.decreaseWidth,
+                            place: "top"
+                        }}
+                        onClick={() => props.setFlex(Math.max(0, (props.flex ?? 1) - 1))}
+                    />
+                </ControlShadow>
 
-                {props.isColumn ? "column" : "row"}
-                {props.isContainer ? "container" : "other"}
-            </div>
-        </div>
+                <ControlShadow
+                    isColumn={!props.isColumn}
+                    className={props.isColumn ? "rounded-r-none" : "rounded-b-none"}
+                >
+                    <ControlButton
+                        icon={faTrash}
+                        onMouseEnter={() => setMode("delete")}
+                        onMouseLeave={() => setMode(undefined)}
+                        onClick={() => {}}
+                        tooltip={{
+                            content: "Delete Content",
+                            place: props.isColumn ? "left" : "top"
+                        }}
+                    />
+                </ControlShadow>
+            </Control>
+
+            <AreaHighlight mode={mode} />
+        </>
     );
 }
 
 export namespace RenderControl {
     export type Props = {
-        isContainer?: boolean;
         isColumn: boolean;
+        flex?: number;
+        setFlex: Dispatch<Props["flex"]>;
     };
 }

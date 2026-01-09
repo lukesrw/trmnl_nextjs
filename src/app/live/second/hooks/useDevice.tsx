@@ -1,21 +1,14 @@
-import { getScreen } from "@/app/api/dashboard/getScreen";
 import { RenderOptions } from "@/types/Render/RenderOptions";
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
-import {
-    Dispatch,
-    JSX,
-    PropsWithChildren,
-    SetStateAction,
-    createContext,
-    useContext,
-    useMemo,
-    useState
-} from "react";
+import { Dispatch, JSX, PropsWithChildren, SetStateAction, createContext, useContext, useMemo, useState } from "react";
 import { getDevice } from "../getDevice";
-import { MODES, ModeIndex } from "../MODES";
+import { ModeIndex } from "../MODES";
 
 type DeviceContextValue = {
     device: ReturnType<typeof getDevice>;
+
+    viewMode: ModeIndex;
+    setViewMode: Dispatch<SetStateAction<DeviceContextValue["viewMode"]>>;
 
     pipeline: RenderOptions;
     setPipeline: Dispatch<SetStateAction<DeviceContextValue["pipeline"]>>;
@@ -28,7 +21,6 @@ const DeviceContext = createContext<DeviceContextValue | null>(null);
 export function DeviceProvider(
     props: PropsWithChildren<{
         device: DeviceContextValue["device"];
-        viewMode: ModeIndex;
     }>
 ) {
     const [pipeline, setPipeline] = useState<RenderOptions>({
@@ -38,29 +30,13 @@ export function DeviceProvider(
             isWhite: false
         }
     });
-    // const queryKey = useDebounce([pipeline, props.viewMode], 1e3);
+
+    const [viewMode, setViewMode] = useState<ModeIndex>(2);
 
     const $Screen = useQuery({
-        queryKey: [pipeline, props.viewMode],
+        queryKey: [],
         async queryFn() {
-            const data = await getScreen(pipeline, MODES[props.viewMode].name);
-
-            return (
-                <img
-                    className="w-full h-full bg-transparent"
-                    src={URL.createObjectURL(
-                        new Blob([new Uint8Array(data)], {
-                            type: "image/bmp"
-                        })
-                    )}
-                    alt=""
-                    style={{
-                        imageRendering: "pixelated",
-                        objectPosition: "center",
-                        objectFit: "contain"
-                    }}
-                />
-            );
+            return <img />;
         }
     });
 
@@ -69,16 +45,14 @@ export function DeviceProvider(
             device: props.device,
             pipeline,
             setPipeline,
-            $Screen
+            $Screen,
+            viewMode,
+            setViewMode
         }),
-        [props.device, pipeline, props.device.style.frame.backgroundColor]
+        [props.device, pipeline, props.device.style.frame.backgroundColor, viewMode, setViewMode]
     );
 
-    return (
-        <DeviceContext.Provider value={value}>
-            {props.children}
-        </DeviceContext.Provider>
-    );
+    return <DeviceContext.Provider value={value}>{props.children}</DeviceContext.Provider>;
 }
 
 export function useDevice() {

@@ -4,39 +4,43 @@ import { MouseEventHandler } from "react";
 import { twMerge } from "tailwind-merge";
 import { useDevice } from "../hooks/useDevice";
 
-export function GapControlButton(props: Readonly<GapControlButton.Props>) {
+export function ControlButton(props: Readonly<ControlButton.Props>) {
     const { device } = useDevice();
 
     return (
         <button
             className={twMerge(
-                "transition-colors p-[0_5.75px] flex-1 opacity-50 hover:opacity-100 outline-none focus:opacity-100",
-                props.tooltip ? "tooltip" : ""
+                "flex-1 p-[0_5.75px] outline-none transition-colors",
+                props.tooltip ? "tooltip" : "",
+                device.isLight ? "hover:bg-black/20 focus:bg-black/20" : "hover:bg-white/20 focus:bg-white/20"
             )}
             data-tooltip-content={props.tooltip?.content}
             data-tooltip-place={props.tooltip?.place}
-            style={{
-                background: device.color
-            }}
             onClick={(event) => {
                 props.onClick(event);
                 event.currentTarget.blur();
             }}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
+            disabled={props.isDisabled}
         >
             <FontAwesomeIcon
                 icon={props.icon}
                 size="2xs"
                 fixedWidth
-                color="#FFF"
+                className={device.isLight ? "text-black" : "text-white"}
             />
         </button>
     );
 }
 
-export namespace GapControlButton {
+export namespace ControlButton {
     export type Props = {
         icon: IconProp;
+        isDisabled?: boolean;
         onClick: MouseEventHandler<HTMLButtonElement>;
+        onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
+        onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
         tooltip?: {
             content: string;
             place: "left" | "right" | "top" | "bottom";

@@ -5,32 +5,39 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PropsWithChildren } from "react";
 import { twMerge } from "tailwind-merge";
 import { useDevice } from "./hooks/useDevice";
+import { ModeIndex } from "./MODES";
 
 export namespace ModeButton {
     export type Props = PropsWithChildren<{
+        index: ModeIndex;
         isActive: boolean;
         isViewEnabled: boolean;
-        isViewActive: boolean;
+        // isViewActive: boolean;
         setIsActive: () => void;
-        setIsViewActive: () => void;
+        // setIsViewActive: () => void;
         hasContent?: boolean;
     }>;
 }
 
 export function ModeButton(props: Readonly<ModeButton.Props>) {
-    const { device } = useDevice();
+    const { device, viewMode, setViewMode } = useDevice();
     const { backgroundColor, borderRadius } = device.style.frame;
+    const isViewModeActive = viewMode === props.index;
 
     return (
-        <div className="flex-1 relative group basis-0 min-w-0">
+        <div className="group relative min-w-0 flex-1 basis-0">
             <button
                 className={twMerge(
-                    "p-2 px-20 font-microma text-xl rounded-xl w-full text-black font-medium group/button relative",
-                    props.isActive
-                        ? ""
-                        : "[&:not(:hover)]:!bg-transparent [&:not(:hover)]:!shadow-none opacity-50"
+                    "group/button relative w-full rounded-xl p-2 px-20 font-microma text-xl font-medium text-black",
+                    props.isActive ? "" : "opacity-50 [&:not(:hover)]:!bg-transparent [&:not(:hover)]:!shadow-none"
                 )}
-                onClick={props.setIsActive}
+                onClick={() => {
+                    props.setIsActive();
+
+                    if (viewMode < props.index) {
+                        setViewMode(props.index);
+                    }
+                }}
                 style={{
                     backgroundColor,
                     borderRadius,
@@ -41,7 +48,7 @@ export function ModeButton(props: Readonly<ModeButton.Props>) {
                 {props.children}
 
                 <div
-                    className="left-0 h-full w-full absolute top-full pointer-events-none group-hover/button:opacity-100 opacity-0"
+                    className="pointer-events-none absolute left-0 top-full h-full w-full opacity-0 group-hover/button:opacity-100"
                     style={{
                         backgroundColor: device.style.frame.backgroundColor
                     }}
@@ -50,19 +57,13 @@ export function ModeButton(props: Readonly<ModeButton.Props>) {
 
             <button
                 className={twMerge(
-                    "absolute right-2 top-1/2 -translate-y-1/2 rounded-full w-8 h-8",
-                    props.isViewActive
-                        ? "bg-white"
-                        : "text-black/50 hover:bg-white/50",
-                    props.isViewEnabled
-                        ? ""
-                        : "pointer-events-none opacity-0 group-hover:opacity-100"
+                    "absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full",
+                    isViewModeActive ? "bg-white" : "text-black/50 hover:bg-white/50",
+                    props.isViewEnabled ? "" : "pointer-events-none opacity-0 group-hover:opacity-100"
                 )}
-                onClick={props.setIsViewActive}
+                onClick={() => setViewMode(props.index)}
                 style={{
-                    boxShadow: props.isViewActive
-                        ? device.style.screenShadow.boxShadow
-                        : "none"
+                    boxShadow: isViewModeActive ? device.style.screenShadow.boxShadow : "none"
                 }}
             >
                 <FontAwesomeIcon icon={faEye} fixedWidth />

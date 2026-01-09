@@ -2,16 +2,17 @@
 
 import { RenderContainerConfig } from "@/lib/SingleRender";
 import { RenderInput as RenderInputConfig } from "@/types/Render/RenderInput";
-import { PropsWithChildren, useState } from "react";
+import { cloneDeep, set } from "lodash";
+import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { AreaHighlight } from "./components/AreaHighlight";
 import { GapControl } from "./components/GapControl";
 import { RenderControl } from "./components/RenderControl";
 import { TrmnlLogo } from "./components/TrmnlLogo";
 import { useDevice } from "./hooks/useDevice";
-
-export namespace TrmlDevice {
-    export type Props = PropsWithChildren;
-}
+import { GapProvider, useGap } from "./hooks/useGap";
+import { useRender } from "./lib/useRender";
+import { MODES } from "./MODES";
 
 /*
 {$Screen.isLoading ? (
@@ -33,22 +34,55 @@ export namespace TrmlDevice {
 
 namespace RenderInput {
     export type Props = PropsWithChildren<{
+        path: string;
         config: RenderInputConfig & { flex?: number };
         isParentColumn: boolean;
+        width: number;
+        height: number;
     }>;
 }
 
 function RenderInput(props: Readonly<RenderInput.Props>) {
+    const { viewMode } = useDevice();
+    const { config, setConfig } = useConfig();
+
+    const $Screen = useRender(
+        Math.floor(props.width),
+        Math.floor(props.height),
+        {
+            input: props.config,
+            dither: {
+                method: "radial"
+            }
+        },
+        MODES[viewMode].name
+    );
+
     return (
         <div
-            className="bg-white relative"
+            className="relative bg-white"
             style={{
                 flex: props.config.flex
             }}
         >
-            {JSON.stringify(props.config, null, 4)}
+            {props.path}
 
-            <RenderControl isColumn={props.isParentColumn} />
+            {$Screen.data}
+
+            <RenderControl
+                isColumn={props.isParentColumn}
+                flex={props.config.flex}
+                setFlex={(flex) => {
+                    setConfig((config) => {
+                        const x = set(cloneDeep(config), props.path, {
+                            ...props.config,
+                            flex
+                        });
+
+                        return x;
+                    });
+                }}
+            />
 
             {props.children}
         </div>
@@ -57,8 +91,11 @@ function RenderInput(props: Readonly<RenderInput.Props>) {
 
 namespace RenderContainer {
     export type Props = PropsWithChildren<{
+        path: string;
         config: RenderContainerConfig & { flex?: number };
         isParentColumn: boolean;
+        width: number;
+        height: number;
     }>;
 }
 
@@ -67,14 +104,42 @@ const GAP_INCREMENT = 24;
 
 function RenderContainer(props: Readonly<RenderContainer.Props>) {
     const [isColumn, setIsColumn] = useState(props.config.isColumn ?? false);
-    const [gap, setGap] = useState(props.config.gap ?? 0);
+    const [isLocalGap, setIsLocalGap] = useState(false);
+    const [localGap, setLocalGap] = useState(props.config.gap ?? 0);
     const [flex, setFlex] = useState(props.config.flex ?? 1);
+    const [mode, setMode] = useState<AreaHighlight.Props["mode"]>();
+    const { gap, setGap } = useGap();
+
+    useEffect(() => {
+        if (!isLocalGap) {
+            setLocalGap(gap);
+        }
+    }, [gap, isLocalGap]);
+
+    let widthPerFlex = props.width;
+    let heightPerFlex = props.height;
+
+    const totalFlex = props.config.children.reduce((count, config) => {
+        return count + config.flex;
+    }, 0);
+
+    if (isColumn) {
+        if (props.config.children.length > 1 && localGap > 0) {
+            heightPerFlex -= localGap * props.config.children.length - 1;
+        }
+        heightPerFlex /= totalFlex;
+    } else {
+        if (props.config.children.length > 1 && localGap > 0) {
+            widthPerFlex -= localGap * props.config.children.length - 1;
+        }
+        widthPerFlex /= totalFlex;
+    }
 
     return (
         <div
-            className="flex relative transition-[gap] h-full"
+            className="relative flex h-full transition-[gap]"
             style={{
-                gap,
+                gap: localGap,
                 flexDirection: isColumn ? "column" : "row",
                 flex
             }}
@@ -83,20 +148,29 @@ function RenderContainer(props: Readonly<RenderContainer.Props>) {
                 const isFirstChild = index === 0;
                 const isLastChild = index === props.config.children.length - 1;
 
+                const width = widthPerFlex * (isColumn ? config.flex : 1);
+                const height = heightPerFlex * (isColumn ? 1 : config.flex);
+
                 if ("children" in config) {
                     return (
                         <RenderContainer
+                            path={`${props.path ? `${props.path}.` : ""}children[${index}]`}
                             key={index}
                             config={config}
                             isParentColumn={isColumn}
+                            width={width}
+                            height={height}
                         >
                             <GapControl
-                                gap={gap}
+                                localGap={localGap}
+                                setLocalGap={setLocalGap}
                                 setGap={setGap}
+                                setIsLocalGap={setIsLocalGap}
                                 isColumn={isColumn}
                                 setIsColumn={setIsColumn}
                                 isFirstChild={isFirstChild}
                                 isLastChild={isLastChild}
+                                setMode={setMode}
                             />
                         </RenderContainer>
                     );
@@ -104,44 +178,68 @@ function RenderContainer(props: Readonly<RenderContainer.Props>) {
 
                 return (
                     <RenderInput
+                        path={`${props.path ? `${props.path}.` : ""}children[${index}]`}
                         key={index}
                         config={config}
                         isParentColumn={isColumn}
+                        width={width}
+                        height={height}
                     >
                         <GapControl
-                            gap={gap}
+                            localGap={localGap}
+                            setLocalGap={setLocalGap}
                             setGap={setGap}
+                            setIsLocalGap={setIsLocalGap}
                             isColumn={isColumn}
                             setIsColumn={setIsColumn}
                             isFirstChild={isFirstChild}
                             isLastChild={isLastChild}
+                            setMode={setMode}
                         />
                     </RenderInput>
                 );
             })}
+
+            <AreaHighlight mode={mode}></AreaHighlight>
 
             {props.children}
         </div>
     );
 }
 
-export function TrmnlDevice(props: Readonly<TrmlDevice.Props>) {
-    const { device, $Screen } = useDevice();
-    const [config, setConfig] = useState<RenderContainerConfig>({
+function RenderParent() {
+    const { config } = useConfig();
+    const { device } = useDevice();
+
+    return (
+        <RenderContainer
+            path=""
+            config={config}
+            isParentColumn={false}
+            width={device.screen.width}
+            height={device.screen.height}
+        />
+    );
+}
+
+type ConfigContextValue = {
+    config: RenderContainerConfig;
+    setConfig: Dispatch<SetStateAction<ConfigContextValue["config"]>>;
+};
+
+const ConfigContext = createContext<ConfigContextValue | null>(null);
+
+function ConfigProvider(props: Readonly<PropsWithChildren>) {
+    const [config, setConfig] = useState<ConfigContextValue["config"]>({
         children: [
             {
-                type: "text",
-                content: "Hello World 1",
+                type: "image",
+                path: "kids-modified.png",
                 flex: 1
             },
             {
-                type: "text",
-                content: "Hello World 1",
-                flex: 1
-            },
-            {
-                type: "text",
-                content: "Hello World 1",
+                type: "image",
+                path: "kids-modified.png",
                 flex: 1
             }
         ],
@@ -149,49 +247,62 @@ export function TrmnlDevice(props: Readonly<TrmlDevice.Props>) {
         isColumn: false
     });
 
-    return (
-        <>
-            <div
-                className="w-min mx-auto group/trmnl"
-                style={{ perspective: "1000px" }}
-            >
-                <div className="flex relative" style={device.style.frame}>
-                    <div
-                        className="bg-neutral-300 flex-1 overflow-hidden relative"
-                        style={device.style.screen}
-                    >
-                        <RenderContainer
-                            config={config}
-                            isParentColumn={false}
-                        />
+    return <ConfigContext.Provider value={{ config, setConfig }}>{props.children}</ConfigContext.Provider>;
+}
 
-                        <div
-                            className="w-full h-full absolute top-0 left-0 pointer-events-none"
-                            style={device.style.screenShadow}
-                        ></div>
-                    </div>
-                    <div
-                        className="absolute bottom-0 left-0 w-full text-black/50 font-bold tracking-widest font-microma h-0 leading-[0] flex justify-center items-center gap-2"
-                        style={device.style.bottom}
-                    >
-                        <div
-                            className="relative aspect-square"
-                            style={device.style.bottomLogo}
-                        >
-                            <TrmnlLogo />
+export function useConfig() {
+    const configContext = useContext(ConfigContext);
+    if (!configContext) {
+        throw new Error("useConfig must be used within a ConfigProvider");
+    }
+
+    return configContext;
+}
+
+export function TrmnlDevice(props: Readonly<TrmlDevice.Props>) {
+    const { device } = useDevice();
+
+    return (
+        <ConfigProvider>
+            <GapProvider>
+                <div className="group/trmnl mx-auto w-min" style={{ perspective: "1000px" }}>
+                    <div className="relative flex" style={device.style.frame}>
+                        <div className="relative flex-1 overflow-hidden bg-neutral-300" style={device.style.screen}>
+                            <RenderParent />
+
+                            <div
+                                className="pointer-events-none absolute left-0 top-0 h-full w-full"
+                                style={device.style.screenShadow}
+                            ></div>
                         </div>
-                        TRMNL
+                        <div
+                            className="absolute bottom-0 left-0 flex h-0 w-full items-center justify-center gap-2 font-microma font-bold leading-[0] tracking-widest text-black/50"
+                            style={device.style.bottom}
+                        >
+                            <div className="relative aspect-square" style={device.style.bottomLogo}>
+                                <TrmnlLogo />
+                            </div>
+                            TRMNL
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <Tooltip
-                anchorSelect=".tooltip"
-                style={{
-                    backgroundColor: device.color,
-                    borderRadius: "0.5rem"
-                }}
-            />
-        </>
+                <Tooltip
+                    anchorSelect=".tooltip"
+                    style={{
+                        backgroundColor: device.color,
+                        borderRadius: "0.5rem",
+                        color: device.isLight ? "#000" : "#FFF",
+                        fontSize: "0.75rem",
+                        fontWeight: "700"
+                    }}
+                    className="font-microma"
+                />
+            </GapProvider>
+        </ConfigProvider>
     );
+}
+
+export namespace TrmlDevice {
+    export type Props = PropsWithChildren;
 }

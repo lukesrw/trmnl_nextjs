@@ -1,5 +1,6 @@
 "use client";
 import { CSSProperties } from "react";
+import { COLOR_LIGHT } from "./data/COLOR";
 import { DEVICE } from "./data/DEVICE";
 
 const widthInVw = 50;
@@ -8,7 +9,7 @@ export function getDevice<TDevice extends keyof typeof DEVICE>(
     deviceVersion: TDevice,
     colorChoice: keyof (typeof DEVICE)[TDevice]["colors"]
 ) {
-    const { sizeInCm, colors } = DEVICE[deviceVersion];
+    const { sizeInCm, colors, screen } = DEVICE[deviceVersion];
     const sizeInVw = {
         width: widthInVw,
         height: (sizeInCm.height / sizeInCm.width) * widthInVw,
@@ -21,6 +22,8 @@ export function getDevice<TDevice extends keyof typeof DEVICE>(
 
     return {
         color,
+        screen,
+        isLight: COLOR_LIGHT.includes(color),
         style: {
             frame: {
                 width: `${sizeInVw.width}vw`,
