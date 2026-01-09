@@ -47,7 +47,7 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
         {
             input: {
                 type: "image",
-                path: join("shalom.png"),
+                path: join("avatar.webp"),
                 isWhite: false
             },
             //             frame: {
@@ -86,9 +86,9 @@ export function getDisplay(trmnlRequest: TrmnlRequest, isDebug = false) {
             //             },
             dither: {
                 // radial or lowPalette
-                method: ditherMethod.lowPalette,
+                method: ditherMethod.basic,
                 position: "center",
-                fit: "contain"
+                fit: "cover"
             }
         },
         {
