@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # temporary
+
 /public/img/*
 !/public/img/step-2.png
 !/public/img/work
